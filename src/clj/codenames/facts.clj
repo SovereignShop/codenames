@@ -63,46 +63,13 @@
 (defn map-facts [datom-fn serializer facts]
   (mapv (fn [[e a v t added?]]
          (case a
-           (:transform/matrix
-            :derived-assists/pose
-            :snapshot/robot-state--major-faults
-            :snapshot/robot-state--critical-faults
-            :snapshot/robot-state--cliff-state
-            :snapshot/robot-state--imu-acc-Gs-avg
-            :snapshot/robot-state--imu-acc
-            :snapshot/robot-state--imu-gyro-rads-avg
-            :snapshot/robot-state--imu-gyro-alt
-            :snapshot/robot-state--imu-gyro
-            :snapshot/planar-lidar--intensities
-            :snapshot/planar-lidar--ranges
-            :snapshot/tf-map--slanted-lidar
-            :snapshot/slanted-lidar--intensities
-            :snapshot/slanted-lidar--ranges
-            :snapshot/tf-map--planar-lidar
-            :snapshot/slanted-lidar
-            :snapshot/transforms
-            :route-bundles/static-path
-            :route-bundles/static-map-transform
-            :transaction/tx-added
-            :transaction/tx-entities
-            :transaction/tx-meta
-            :logs/data
-            :logs/tags
-            :selection/logs
-            :selection/snapshots
-            :selection/derived-assists
-            :selection/start-pose
-            :selection/end-pose)
+           (:card/position)
            (datom-fn e a (serializer v) t added?)
-           (:route-bundles/width
-            :route-bundles/height
-            :swig.split/split-percent)
-           (datom-fn e a (float v) t added?)
            (datom-fn e a v t added?)))
         facts))
 
 (defn insert-facts! [conn facts]
-  (try 
+  (try
     (d/transact conn (map-facts datom/datom dt/write-transit-str facts))
     (catch Exception e
       (error e))))
