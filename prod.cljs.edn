@@ -1,0 +1,20 @@
+{:main               assist-analysis.core
+ :externs            ["./externs.js"]
+ :closure-defines    {assist-analysis.db/HOSTNAME "http://localhost"
+                      assist-analysis.db/PORT     "3001"}
+ :pseudo-names       true
+ :pretty-print       true
+ :optimize-constants false ;; https://clojure.atlassian.net/browse/CLJS-3021
+ :optimizations      :advanced
+ :asset-path         "/js/dev"
+ :output-to          "resources/public/js/main.js"
+ :output-dir         "resources/public/js/dev"
+ :language-in        :ecmascript-2017
+ :language-out       :ecmascript-2017
+ :foreign-libs       [{:file           "dist/index_bundle.js"
+                       :provides       ["rosbag" "lz4js" "buffer" "three" "three-stl-loader"]
+                       :global-exports {rosbag           Rosbag
+                                        three-stl-loader STLLoader
+                                        three            Three
+                                        lz4js            Lz4js
+                                        buffer           Buffer}}]}

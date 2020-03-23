@@ -1,0 +1,35 @@
+{:main          assist-analysis.core
+ :infer-externs true
+ :optimizations :none
+ :pretty-print  true
+ :preloads      [devtools.preload day8.re-frame-10x.preload figwheel.main figwheel.repl.preload]
+ :source-map    true
+ :asset-path    "/js/dev"
+ :output-to     "resources/public/js/main.js"
+ :output-dir    "resources/public/js/dev"
+ :closure-defines {"clairvoyant.core.devmode" true
+                   "re_frame.trace.trace_enabled_QMARK_" true}
+ :language-in   :ecmascript-2017
+ :language-out  :ecmascript-2017
+ :foreign-libs  [{:file           "dist/index_bundle.js"
+                  :provides       ["rosbag" "lz4js" "buffer" "three" "three-stl-loader"]
+                  :global-exports {rosbag           Rosbag
+                                   three-stl-loader STLLoader
+                                   three            Three
+                                   lz4js            Lz4js
+                                   buffer           Buffer}}
+                 #_{:file           "src/jsm/libs/dat.gui.module.js"
+                    :provides       ["three.libs.gui"]
+                    :module-type    :es6
+                    :global-exports {gui GUI}}
+                 #_{:file        "src/jsm/libs/stats.module.js"
+                    :provides    ["three.libs.stats"]
+                    :module-type :es6}
+                 #_{:file           "src/jsm/controls/orbit-controls.js"
+                    :provides       ["three.modules.orbit-controls"]
+                    :module-type    :es6
+                    :global-exports {orbit-controls OrbitControls}}
+                 #_{:file           "src/jsm/controls/drag-controls.js"
+                    :provides       ["three.modules.drag-controls"]
+                    :module-type    :es6
+                    :global-exports {drag-controls DragControls}}]}
