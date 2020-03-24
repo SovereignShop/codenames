@@ -47,7 +47,7 @@
 (defn create-group
   [{:keys [session params] :as req}]
   (let [{:keys [groupname]} params
-        facts-str           (facts/write-facts-str (d/datoms @(facts/key->conn groupname) :eavt))]
+        facts-str           (facts/write-facts-str (d/datoms @(facts/key->conn "wtf14") :eavt))]
     {:status  200
      :session (assoc session :uid groupname)
      :body    facts-str

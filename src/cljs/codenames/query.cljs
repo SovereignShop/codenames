@@ -59,34 +59,6 @@
            (when headers (clj->js headers))
            30)))
 
-(defn do-query
-  ([query]
-   (do-query query true))
-  ([query datoms?]
-   (do-query query datoms? (gstr/format "%s:%s/query" HOSTNAME PORT)))
-  ([query datoms? uri]
-   (let [q-str (prn-str query)]
-     (re-posh/dispatch [:assist-analysis.events.app-state/query-status :waiting])
-     (request
-      {:uri uri
-       :method :get
-       :edn? false
-       :params {:query q-str :datoms? datoms?}  ;; TODO: GET request body?
-       :success (fn [resp]
-                  (info :success)
-                  (let [results-str (.getResponseText resp)]
-                    (info ::do-query :string/count (count results-str))
-                    (let [datoms (dt/read-transit-str results-str)]
-                      (info ::do-query :count (count datoms))
-                      (re-posh/dispatch [::fact-events/add-facts datoms true])
-                      (re-posh/dispatch [:assist-analysis.events.queries/cache-query query])
-                      (re-posh/dispatch [:assist-analysis.events.app-state/query-status :received]))))
-       :error (fn [resp]
-                (.log js/console "ERROR:" resp)
-                (re-posh/dispatch [:assist-analysis.events.app-state/query-status :received])
-                (re-posh/dispatch [:assist-analysis.events.queries/error ::do-query
-                                   (.getResponseText resp)]))}))))
-
 (defn do-request
   ([query]
    (do-request query false))
@@ -105,7 +77,7 @@
                     (let [results (dt/read-transit-str results-str)]
                       (info "TESTING" (type results) (keys (first results)))
                       (put! result results)
-                      (re-posh/dispatch [:assist-analysis.events.queries/cache-query query]))))
+                      (re-posh/dispatch [:codenames.events.queries/cache-query query]))))
        :error (fn [resp]
                 (let [err (.getResponseText resp)]
                   (js/console.log err)
@@ -135,24 +107,20 @@
      result)))
 
 (defn do-login [credentials]
-  (re-posh/dispatch [:assist-analysis.events.app-state/login-waiting])
+  (re-posh/dispatch [:codenames.events.app-state/login-waiting])
   (request
    {:uri (gstr/format "%s:%s/login" HOSTNAME PORT)
     :method :get
     :edn? false
     :params credentials
     :success (fn [resp]
-               (re-posh/dispatch [:assist-analysis.events.app-state/login-success])
+               (re-posh/dispatch [:codenames.events.app-state/login-success])
                (let [datoms (into [[:db/retractEntity [:swig/ident :swig/main-view]]
                                    [:db/retractEntity [:swig/ident idents/modal-dialog]]
                                    [:db/retractEntity [:swig/ident idents/modal-dialog]]]
                                   (dt/read-transit-str (.getResponseText resp)))]
                  (info "Login succeeded: " datoms)
-                 (re-posh/dispatch [:assist-analysis.events.facts/add-facts datoms])))
+                 (re-posh/dispatch [:codenames.events.facts/add-facts datoms])))
     :error (fn [resp]
-             (re-posh/dispatch [:assist-analysis.events.app-state/login-fail])
+             (re-posh/dispatch [:codenames.events.app-state/login-fail])
              (warn "Login failed"))}))
-
-(defn send-queries [queries]
-  (debug :send-queries queries)
-  (doall (map do-query queries)))

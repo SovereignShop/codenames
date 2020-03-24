@@ -21,7 +21,7 @@
    [org.httpkit.server :refer [run-server]]))
 
 (defroutes routes
-  (GET  "/" [& params] handlers/join-group)
+  (GET  "/" [& params] handlers/common)
   (GET "/login" [& params] handlers/join-group)
   (GET  "/chsk"  ring-req (sente/*ring-ajax-get-or-ws-handshake* ring-req))
   (POST "/chsk"  ring-req (sente/*ring-ajax-post*                ring-req) 1 2)

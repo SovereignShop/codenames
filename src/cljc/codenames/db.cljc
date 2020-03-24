@@ -2,6 +2,8 @@
   (:require
    [codenames.constants.ui-idents :as idents]
    [codenames.constants.ui-views :as views]
+   [codenames.constants.ui-splits :as splits]
+   [codenames.constants.ui-tabs :as tabs]
    [datascript.core :as d]
    [swig.core :as swig :refer [view tab split window full-schema]]
    [taoensso.timbre :as timbre :refer [debug info warn]]))
@@ -17,10 +19,10 @@
 (def game-state
   [{:player/name "John"
     :player/color "blue"
-    :player/type "guesser"}
+    :player/type :player.type/guesser}
    {:player/name "David"
     :player/color "blue"
-    :plyaer/type ""}
+    :player/type :player.type/codemaster}
    {:card/word "Texas"
     :card/color "Blue"
     :card/played? false
@@ -53,17 +55,19 @@
              (swig/window {:swig/ident idents/login-window})
              (swig/window {:swig/ident idents/modal-dialog})))
 
-(def team-selection-layout
+#_(def team-selection-layout
   (swig/view {:swig/ident :swig/main-view}
              (swig/split {})))
 
 (def board-layout
   (swig/view  {:swig/ident :swig/main-view}
-              (swig/split {:swig/ident :splits/main-split}
-                          (swig/split {}
-                                      (swig/tab {})
-                                      (swig/tab {}))
-                          (swig/tab {}))))
+              (swig/split {:swig/ident splits/game-split
+                           :swig.split/orientation :vertical}
+                          (swig/split {:swig/ident splits/game-info-split
+                                       :swig.split/orientation :horizontal}
+                                      (swig/tab {:swig/ident tabs/score-board})
+                                      (swig/tab {:swig/ident tabs/player-board}))
+                          (swig/tab {:swig/ident tabs/game-board}))))
 
 (def schema-keys
   (into #{} (map :db/ident) full-schema))
@@ -71,7 +75,14 @@
 (defonce default-db (into [] cat [game-state extras]))
 
 (def schema
-  [{:db/ident :transaction/tx-meta :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
+  [{:db/ident :card/color :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
+   {:db/ident :card/position :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
+   {:db/ident :card/played? :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one}
+   {:db/ident :card/word :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
+   {:db/ident :player/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
+   {:db/ident :player/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one}
+   {:db/ident :player/color :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
+   {:db/ident :transaction/tx-meta :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
    {:db/ident :transaction/tx-added :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
    {:db/ident :transaction/tx-entities :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
    {:db/ident :ui/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one}

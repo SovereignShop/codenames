@@ -48,6 +48,7 @@
 
 (defmethod client-event ::facts
   [{[_ datoms] :event username :uid}]
+  (info "inserting facts!")
   (facts/insert-facts! (facts/key->conn username) datoms))
 
 (defn init-sente! []
