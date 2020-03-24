@@ -10,11 +10,4 @@
  :output-to          "resources/public/js/main.js"
  :output-dir         "resources/public/js/dev"
  :language-in        :ecmascript-2017
- :language-out       :ecmascript-2017
- :foreign-libs       [{:file           "dist/index_bundle.js"
-                       :provides       ["rosbag" "lz4js" "buffer" "three" "three-stl-loader"]
-                       :global-exports {rosbag           Rosbag
-                                        three-stl-loader STLLoader
-                                        three            Three
-                                        lz4js            Lz4js
-                                        buffer           Buffer}}]}
+ :language-out       :ecmascript-2017}

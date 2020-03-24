@@ -1,13 +1,20 @@
-{:main          codenames.core
- :infer-externs true
- :optimizations :none
- :pretty-print  true
- :preloads      [devtools.preload day8.re-frame-10x.preload figwheel.main figwheel.repl.preload]
- :source-map    true
- :asset-path    "/js/dev"
- :output-to     "resources/public/js/main.js"
- :output-dir    "resources/public/js/dev"
- :closure-defines {"clairvoyant.core.devmode" true
+{:main            codenames.core
+ :infer-externs   true
+ :optimizations   :none
+ :pretty-print    true
+ :preloads        [devtools.preload day8.re-frame-10x.preload figwheel.main figwheel.repl.preload
+                   codenames.events.facts
+                   codenames.events.game
+                   codenames.events.pregame
+                   codenames.events.server
+                   codenames.views.login
+                   codenames.views.game
+                   codenames.views.pregame]
+ :source-map      true
+ :asset-path      "/js/dev"
+ :output-to       "resources/public/js/main.js"
+ :output-dir      "resources/public/js/dev"
+ :closure-defines {"clairvoyant.core.devmode"            true
                    "re_frame.trace.trace_enabled_QMARK_" true}
- :language-in   :ecmascript-2017
- :language-out  :ecmascript-2017}
+ :language-in     :ecmascript-2017
+ :language-out    :ecmascript-2017}
