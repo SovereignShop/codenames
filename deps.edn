@@ -50,7 +50,7 @@
                  compliment                   {:mvn/version "0.3.6"}
                  cljfmt                       {:mvn/version "0.5.7"
                                                :exclusions  [org.clojure/clojurescript]}}
-   :main-opts   ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]" "--port" "4002"]
+   :main-opts   ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]" "--port" "4004"]
    :jvm-opts    ["-Xmx6g"]}
 
   :clj-prod
@@ -136,7 +136,7 @@
                  cljs-tooling                 {:mvn/version "0.3.0"}}
    :extra-paths ["build" "src/jsm"]
    :main-opts   ["-m" "nrepl.cmdline" "--middleware"
-                 "[cider.nrepl/cider-middleware,cider.piggieback/wrap-cljs-repl]" "--port" "4001"]
+                 "[cider.nrepl/cider-middleware,cider.piggieback/wrap-cljs-repl]" "--port" "4003"]
    :jvm-opts    ["-Xmx2g"]}
 
   :uberjar {:extra-deps {uberdeps {:mvn/version "0.1.4"}}

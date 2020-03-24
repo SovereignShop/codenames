@@ -1,44 +1,64 @@
 (ns codenames.db
   (:require
+   [codenames.constants.ui-idents :as idents]
+   [codenames.constants.ui-views :as views]
    [datascript.core :as d]
    [swig.core :as swig :refer [view tab split window full-schema]]
    [taoensso.timbre :as timbre :refer [debug info warn]]))
 
-(def board-dimensions [5 5]) 
+#?(:cljs (goog-define HOSTNAME "http://localhost"))
+#?(:cljs (goog-define PORT "3001"))
+
+(def board-dimensions [5 5])
 (def board-size (apply * board-dimensions))
 
 (def deck #{"Home" "Dog"})
 
 (def game-state
   [{:player/name "John"
-    :player/color :red
-    :player/type :guesser}
+    :player/color "blue"
+    :player/type "guesser"}
    {:player/name "David"
-    :player/color :blue
-    :plyaer/type :codemaster}
-   {:card/word "Tekxas"
+    :player/color "blue"
+    :plyaer/type ""}
+   {:card/word "Texas"
     :card/color "Blue"
     :card/played? false
     :card/position [0 0]}])
 
-;; # Layouts
-
-;; ## Player Login Layout
+(def extras
+  [{:swig/ident              idents/fullscreen-view
+    :fullscreen-view/view-id views/main-view}
+   {:app/type      :type/app-meta
+    :app-meta/name "Assist Analysis"}
+   {:swig/ident       :user-login
+    :app/type         :type/user-login
+    :user-login/state :unauthenticated}
+   {:app/type       :type/ui.scale
+    :swig/ident     :routes-scale-factor
+    :ui.scale/value 100}
+   {:swig/ident        :query-error
+    :app/type          :type/query-error
+    :query-error/error ""
+    :query-error/tag   ::none}
+   {:swig/ident :selection
+    :app/type   :type/selection}
+   {:swig/ident         :query-status
+    :app/type           :type/query-status
+    :query-status/state :received}
+   {:swig/ident idents/server-events}])
 
 (def login-layout
-  (swig/view {:swig/ident :views/main-view}
-             (swig/window {:swig/ident :modal/login})))
-
-;; ## Team selection Layout
+  (swig/view {:swig/ident :swig/main-view}
+             (swig/window {:swig/ident idents/login-window})
+             (swig/window {:swig/ident idents/modal-dialog})))
 
 (def team-selection-layout
-  (swig/view {:swig/ident :views/main-view}
+  (swig/view {:swig/ident :swig/main-view}
              (swig/split {})))
 
-;; ## Primary Game Layout
-
 (def board-layout
-  (swig/view  {:swig/ident :views/main-view}
+  (swig/view  {:swig/ident :swig/main-view}
               (swig/split {:swig/ident :splits/main-split}
                           (swig/split {}
                                       (swig/tab {})
@@ -48,7 +68,7 @@
 (def schema-keys
   (into #{} (map :db/ident) full-schema))
 
-(defonce default-db (into [] cat [game-state]))
+(defonce default-db (into [] cat [game-state extras]))
 
 (def schema
   [{:db/ident :transaction/tx-meta :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
@@ -74,3 +94,5 @@
                                            :db/valueType   :db.type/ref}
                 :swig.split/ops           {:db/cardinality :db.cardinality/many
                                            :db/valueType   :db.type/ref}})
+
+(defonce conn (d/create-conn ds-schema))

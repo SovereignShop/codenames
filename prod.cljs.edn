@@ -1,7 +1,7 @@
-{:main               assist-analysis.core
+{:main               codenaems.core
  :externs            ["./externs.js"]
- :closure-defines    {assist-analysis.db/HOSTNAME "http://localhost"
-                      assist-analysis.db/PORT     "3001"}
+ :closure-defines    {codenames.db/HOSTNAME "http://localhost"
+                      codenames.db/PORT     "3001"}
  :pseudo-names       true
  :pretty-print       true
  :optimize-constants false ;; https://clojure.atlassian.net/browse/CLJS-3021

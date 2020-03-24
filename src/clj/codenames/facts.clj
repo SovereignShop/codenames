@@ -22,11 +22,13 @@
              (.mkdir db-dir)))
        (d/create-database uri
                           :initial-tx
-                          (concat (mapv #(select-keys % [:db/ident :db/valueType :db/cardinality :db/unique])
-                                        (into swig/full-schema datascript-db/schema))
-                                  datascript-db/game-state
-                                  (hiccup->facts datascript-db/board-layout)
-                                  (hiccup->facts datascript-db/team-selection-layout)))
+                          (into []
+                                cat
+                                [(mapv #(select-keys % [:db/ident :db/valueType :db/cardinality :db/unique])
+                                       (into swig/full-schema datascript-db/schema))
+                                 datascript-db/game-state
+                                 (hiccup->facts datascript-db/board-layout)
+                                 (hiccup->facts datascript-db/team-selection-layout)]))
        (d/connect uri)
        (catch clojure.lang.ExceptionInfo ex
          (case (:type (ex-data ex))

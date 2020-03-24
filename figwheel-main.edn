@@ -1,0 +1,2 @@
+{:watch-dirs ["src/cljs" "src/cljc" "deps/modules/swig/src"]
+ :css-dirs ["resources/public/assets/css"]}
