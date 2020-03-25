@@ -1,0 +1,27 @@
+docker run\
+       --rm\
+       -it\
+       --name assist-analysis-emacs\
+       -v /tmp/.X11-unix:/tmp/.X11-unix:ro\
+       -e DISPLAY=":0"\
+       -e UNAME="${USER}"\
+       -e GNAME="${USER}"\
+       -e UID="1001"\
+       -e GID="1001"\
+       -p 9500:9500\
+       -p 3001:3001\
+       -v ${HOME}/Workspace/shining_software:${HOME}/Workspace/shining_software\
+       -v /usr/bin/git-lfs:/usr/bin/git-lfs\
+       -v ${HOME}/projects/codenames:${HOME}/projects/codenames\
+       -v ${HOME}/.bashrc:${HOME}/.bashrc\
+       -v ${HOME}/.oh-my-zsh:${HOME}/.oh-my-zsh\
+       -v ${HOME}/.zshrc:${HOME}/.zshrc\
+       -v ${HOME}/.ssh/:${HOME}/.ssh\
+       -v ${HOME}/.spacemacs:${HOME}/.spacemacs\
+       -v ${HOME}/.m2:${HOME}/.m2\
+       -v ${HOME}/.clojure:${HOME}/.clojure\
+       -v ${HOME}/.emacs.d:${HOME}/.emacs.d\
+       -v ${HOME}/projects/assist-analysis:${HOME}/projects/assist-analysis\
+       -v ${HOME}/.aws:${HOME}/.aws\
+       -v /var/lib/brain/fact-db/:/var/lib/brain/fact-db\
+          jmicahc/rad:py3-test /bin/bash -c 'source /opt/shining_software/use_repo.sh && emacs'

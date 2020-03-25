@@ -1,0 +1,79 @@
+FROM adoptopenjdk/openjdk11:x86_64-ubuntu-jdk-11.0.3_7-slim
+# XXX: X11 forwardig
+# Fix "Couldn't register with accessibility bus" error message
+ENV NO_AT_BRIDGE=1
+ENV DEBIAN_FRONTEND noninteractive
+
+# basic stuff
+RUN echo 'APT::Get::Assume-Yes "true";' >> /etc/apt/apt.conf \
+    && apt-get update && apt-get install \
+    bash \
+    build-essential \
+    dbus-x11 \
+    fontconfig \
+    git \
+    gzip \
+    language-pack-en-base \
+    aptitude \
+    libgl1-mesa-glx \
+    make \
+    sudo \
+    tar \
+    unzip \
+    rlwrap \
+    zsh \
+# su-exec
+    && git clone https://github.com/ncopa/su-exec.git /tmp/su-exec \
+    && cd /tmp/su-exec \
+    && make \
+    && chmod 770 su-exec \
+   && mv ./su-exec /usr/local/sbin/ \
+# Cleanup
+    && apt-get purge build-essential \
+    && apt-get autoremove \
+    && rm -rf /tmp/* /var/lib/apt/lists/* /root/.cache/*
+
+RUN git config --global user.email "john.collins@braincorp.com" && git config --global user.name "John Collins"
+
+# Install oh-my-zsh
+RUN \
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+
+# Pip installs
+RUN sh -c "pip install --upgrade pip && pip install ipython"
+
+COPY asEnvUser /usr/local/sbin/
+
+# Only for sudoers
+RUN chown root /usr/local/sbin/asEnvUser \
+    && chmod 700  /usr/local/sbin/asEnvUser
+
+# ^^^^^^^ Those layers are shared ^^^^^^^
+
+# Emacs
+RUN apt-get update\
+    && apt-add-repository ppa:kelleyk/emacs\
+    && apt-get update && apt-get install -y emacs26\
+# Cleanup
+    && rm -rf /tmp/* /var/lib/apt/lists/* /root/.cache/*
+
+ENV UNAME="johncollins" \
+    GNAME="johncollins" \
+    UHOME="/home/johncollins" \
+    UID="1000" \
+    GID="1000" \
+    SHELL="/usr/bin/zsh"
+
+# CLI TOOLS
+
+RUN curl -O https://download.clojure.org/install/linux-install-1.10.1.536.sh\
+  && chmod +x linux-install-1.10.1.536.sh\
+  && sudo ./linux-install-1.10.1.536.sh
+
+# END X11 forwarding
+ADD target/lib/lib app/lib
+ADD target/codenames-0.0.1-SNAPSHOT.jar app/
+WORKDIR /app
+ENTRYPOINT ["asEnvUser"]
+CMD ["bash", "-c", "emacs; /bin/bash"]
+EXPOSE 3000
