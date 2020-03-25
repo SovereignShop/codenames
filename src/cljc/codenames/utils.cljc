@@ -38,37 +38,34 @@
                    (mapv vec))]
     (for [row (range n-rows)
           col (range n-cols)]
-      {:board-card/position [row col]
-       :board-card/word     (get-in words [row col])})))
+      {:codenames.word-card/position [row col]
+       :codenames.word-card/word     (get-in words [row col])})))
 
 (defn make-investigator-cards [color n]
-  (repeat n {:card/color color
-             :card/played? false}))
+  (repeat n {:codenames.character-card/color color
+             :codenames.character-card/played? false}))
 
-(defn make-game [word-bank board-dimensions]
-  (let [first-player (nth [:red :blue] (rand-int 2))
-        board-cards  (make-board-cards word-bank board-dimensions)
-        red-cards    (make-investigator-cards :red (case first-player :red 9 8))
-        blue-cards   (make-investigator-cards :blue (case first-player :blue 9 8))
-        game         {:db/id -1
-                      :game/id (make-random-uuid)
-                      :game/finshed? false}
-        app-state    {:swig/ident idents/app-state
-                      :codenames.app-state/current-game -1}]
+(defn make-game [teams word-bank board-dimensions]
+  (let [first-player   (nth [:red :blue] (rand-int 2))
+        board-cards    (make-board-cards word-bank board-dimensions)
+        red-cards      (make-investigator-cards :red (case first-player :red 9 8))
+        blue-cards     (make-investigator-cards :blue (case first-player :blue 9 8))
+        neutral-cards  (make-investigator-cards :neutral 7)
+        assasin-cards  (make-investigator-cards :assassin 1)
+        game           {:db/id         -1
+                        :game/id       (make-random-uuid)
+                        :game/finshed? false
+                        :game/teams    teams}
+        teams-by-color (group-by :codenames.team/color teams)
+        app-state      {:swig/ident                        idents/app-state
+                        :codenames.game-state/current-team (first (teams-by-color first-player))}]
     (into [game app-state]
-          (comp cat (map #(assoc % :codenames/game -1)))
-          [board-cards red-cards blue-cards])))
+          (comp cat (map #(assoc % :codenames.piece/game -1)))
+          [board-cards red-cards blue-cards neutral-cards assasin-cards])))
 
 (comment
   (make-game db/words db/board-dimensions)
   (require '[datascript.core :as d])
   (first (d/rseek-datoms @db/conn :aevt :codename.game/id))
-
-  (d/q '[:find (pull ?card [*])
-         :in $
-         :where
-         [?id :codenames.app-state/current-game ?current-game]
-         [?card :codenames/game ?current-game]]
-       @db/conn)
 
   )

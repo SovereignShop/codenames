@@ -28,6 +28,15 @@
                                     :attr        {:id "pf-username"}]]]
                        [v-box
                         :class    "form-group"
+                        :children [[:label {:for "pf-username"} "Group Name"]
+                                   [input-text
+                                    :model       (:username @form-data)
+                                    :on-change   #(swap! form-data assoc :groupname %)
+                                    :placeholder "Enter group name"
+                                    :class       "form-control"
+                                    :attr        {:id "pf-username"}]]]
+                       [v-box
+                        :class    "form-group"
                         :children [[:label {:for "pf-password"} "Password"]
                                    [input-text
                                     :model       (:password @form-data)
@@ -43,7 +52,11 @@
                        [h-box
                         :gap      "12px"
                         :children [[button
-                                    :label    "Sign in"
+                                    :label    "Join group"
+                                    :class    "btn-primary"
+                                    :on-click process-ok]
+                                   [button
+                                    :label    "Create group"
                                     :class    "btn-primary"
                                     :on-click process-ok]
                                    [button
@@ -75,19 +88,18 @@
         process-cancel (fn [& _]
                          (re-posh/dispatch [:codenames.events.app-state/login-success])
                          false)]
-    (fn []
-      [v-box
-       :children [(when @show?
-                    [modal-panel
-                     :backdrop-color   "grey"
-                     :backdrop-opacity 0.0
-                     :backdrop-on-click process-cancel
-                     :style            {:font-family "Consolas"}
-                     :child            [dialog-markup
-                                        login-state
-                                        form-data
-                                        process-ok
-                                        process-cancel]])]])))
+    [v-box
+     :children [(when @show?
+                  [modal-panel
+                   :backdrop-color   "grey"
+                   :backdrop-opacity 0.0
+                   :backdrop-on-click process-cancel
+                   :style            {:font-family "Consolas"}
+                   :child            [dialog-markup
+                                      login-state
+                                      form-data
+                                      process-ok
+                                      process-cancel]])]]))
 
 (defmethod swig-view/dispatch idents/login-window [_]
   [:img {:src "assets/brainos-background.jpg"

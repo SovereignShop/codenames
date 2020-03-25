@@ -107,12 +107,12 @@
    {:player/name  "David"
     :player/color "blue"
     :player/type  :player.type/codemaster}
-   {:card/color    "Blue"
-    :card/played?  false
-    :card/position [0 0]}
-   {:board-card/word "Home"
-    :board-card/position? [0 0]
-    :board-card/covered? false}])
+   {:codenames.character-card/color    "Blue"
+    :codenames.character-card/played?  false
+    :codenames.character-card/position [0 0]}
+   {:codenames.word-card/word "Home"
+    :codenames.word-card/position? [0 0]
+    :codenames.word-card/covered? false}])
 
 (def extras
   [{:swig/ident              idents/fullscreen-view
@@ -128,15 +128,13 @@
              (swig/window {:swig/ident idents/login-window})
              (swig/window {:swig/ident idents/modal-dialog})))
 
-#_(def team-selection-layout
-  (swig/view {:swig/ident :swig/main-view}
-             (swig/split {})))
-
 (def board-layout
   (swig/view  {:swig/ident :swig/main-view}
               (swig/split {:swig/ident splits/game-split
-                           :swig.split/orientation :vertical}
+                           :swig.split/orientation :vertical
+                           :swig.split/split-percent 30}
                           (swig/split {:swig/ident splits/game-info-split
+                                       :swig.split/split-percent 50
                                        :swig.split/orientation :horizontal}
                                       (swig/tab {:swig/ident tabs/score-board})
                                       (swig/tab {:swig/ident tabs/player-board}))
@@ -148,20 +146,35 @@
 (defonce default-db (into [] cat [game-state extras]))
 
 (def schema
-  [{:db/ident :game/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
+  [{:db/ident :turn/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
+   {:db/ident :turn/game :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
+   {:db/ident :group/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
+   {:db/ident :group/name :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
+   {:db/ident :user/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
+   {:db/ident :user/name :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
+   {:db/ident :user/alias :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
+   {:db/ident :game/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
+   {:db/ident :game/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
+   {:db/ident :game/teams :db/valueType :db.type/ref :db/cardinality :db.cardinality/many}
    {:db/ident :game/finished? :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one}
-   {:db/ident :codenames/game :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
-   {:db/ident :codenames.app-state/current-game :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
-   {:db/ident :board-card/covered? :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one}
-   {:db/ident :board-card/position :db/valueType :db.type/string  :db/cardinality :db.cardinality/one}
-   {:db/ident :board-card/word     :db/valueType :db.type/string  :db/cardinality :db.cardinality/one}
-   {:db/ident :card/color :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
-   {:db/ident :card/position :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
-   {:db/ident :card/played? :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one}
-   {:db/ident :card/word :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
-   {:db/ident :player/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
-   {:db/ident :player/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one}
-   {:db/ident :player/color :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
+   {:db/ident :codenames.team/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
+   {:db/ident :codenames.team/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
+   {:db/ident :codenames.team/color :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
+   {:db/ident :codenames.team/players :db/valueType :db.type/ref :db/cardinality :db.cardinality/many}
+   {:db/ident :codenames.player/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
+   {:db/ident :codenames.player/user :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
+   {:db/ident :codenames.player/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one}
+   {:db/ident :codenames.app-state/current-teams :db/valueType :db.type/ref :db/cardinality :db.cardinality/many}
+   {:db/ident :codenames.game-state/current-team :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
+   {:db/ident :codenames.player-state/team :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
+   {:db/ident :codenames.player-state/player :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
+   {:db/ident :codenames.piece/game :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
+   {:db/ident :codenames.piece/type :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
+   {:db/ident :codenames.word-card/character-card :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
+   {:db/ident :codenames.word-card/position :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
+   {:db/ident :codenames.word-card/word :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
+   {:db/ident :codenames.character-card/color :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
+   {:db/ident :codenames.character-card/role :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one}
    {:db/ident :transaction/tx-meta :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
    {:db/ident :transaction/tx-added :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
    {:db/ident :transaction/tx-entities :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
@@ -169,23 +182,15 @@
    {:db/ident :popover/showing? :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one}
    {:db/ident :app/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one}])
 
-(def ds-schema {:db/ident                         {:db/unique :db.unique/identity}
-                :swig/ident                       {:db/unique :db.unique/identity}
-                :codenames/game                   {:db/valueType :db.type/ref}
-                :codenames.app-state/current-game {:db/valueType :db.type/ref}
-                :swig.ref/parent                  {:db/valueType :db.type/ref}
-                :swig.ref/previous-parent         {:db/valueType :db.type/ref}
-                :swig.view/active-tab             {:db/valueType :db.type/ref}
-                :swig.tab/label                   {:db/valueType :db.type/ref}
-                :swig.split/view-1                {:db/valueType :db.type/ref}
-                :swig.split/view-2                {:db/valueType :db.type/ref}
-                :swig.tab/view-id                 {:db/valueType :db.type/ref}
-                :swig.view/tab-ids                {:db/cardinality :db.cardinality/many}
-                :swig.tab/ops                     {:db/cardinality :db.cardinality/many
-                                                   :db/valueType   :db.type/ref}
-                :swig.view/ops                    {:db/cardinality :db.cardinality/many
-                                                   :db/valueType   :db.type/ref}
-                :swig.split/ops                   {:db/cardinality :db.cardinality/many
-                                                   :db/valueType   :db.type/ref}})
+(defn to-ds-schema [schema]
+  (into {:db/ident {:db/unique :db.unique/identity}}
+        (comp cat
+              (map (fn [m]
+                     [(:db/ident m)(cond-> m
+                                     true                                  (dissoc m :db/ident)
+                                     (not= (:db/valueType m) :db.type/ref) (dissoc m :db/valueType))])))
+        [swig/full-schema schema]))
+
+(def ds-schema (to-ds-schema schema))
 
 (defonce conn (d/create-conn ds-schema))

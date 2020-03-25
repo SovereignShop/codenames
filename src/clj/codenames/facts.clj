@@ -63,7 +63,7 @@
 (defn map-facts [datom-fn serializer facts]
   (mapv (fn [[e a v t added?]]
          (case a
-           (:card/position :board-card/position)
+           (:codenames.character-card/position :codenames.word-card/position)
            (datom-fn e a (serializer v) t added?)
            (datom-fn e a v t added?)))
         facts))

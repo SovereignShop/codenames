@@ -1,5 +1,7 @@
 (ns codenames.subs.app-state
   (:require
+   [datascript.core :as d]
+   [codenames.db :as db]
    [swig.macros :refer-macros [def-sub]]
    [taoensso.timbre :refer-macros [debug info warn]]))
 
@@ -23,3 +25,8 @@
   [:find ?login-state .
    :where
    [?id :user-login/state ?login-state]])
+
+(comment
+  (d/q current-game @db/conn)
+
+  )

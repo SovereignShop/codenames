@@ -8,11 +8,11 @@
    [codenames.db :as db]
    [swig.views :as swig-view]
    [re-posh.core :as re-posh]
-   [re-com.core :refer [h-box v-box box button]]))
+   [re-com.core :refer [h-box v-box box button gap]]))
 
 (defn display-card
-  [{:keys [:board-card/word
-           :board-card/position]
+  [{:keys [:codenames.word-card/word
+           :codenames.word-card/position]
     :as   card}]
   [box
    :attr  {:on-click #(re-posh/dispatch [::game-events/card-click card])}
@@ -20,11 +20,11 @@
            :height           "70px"
            :text-align       "center"
            :background-color "red"}
-   :child [:h4 {:text-align :center} word]])
+   :child [:h4 {:style {:text-align :center}} word]])
 
 (defn game-score [game-id]
-  (let [[red-remaining blue-remaning] (re-posh/subscribe [::game-subs/cards-remaining game-id])]
-    [:div]))
+  (let [[red-remaining blue-remaining] @(re-posh/subscribe [::game-subs/cards-remaining game-id])]
+    [:div (str red-remaining " - " blue-remaining)]))
 
 (defn board-info [game-id]
   [h-box
@@ -35,9 +35,10 @@
 
 (defn board-grid [game-id]
   (let [cards (->> @(re-posh/subscribe [::game-subs/board-cards game-id])
-                   (sort-by :board-card/position)
+                   (sort-by :codenames.word-card/position)
                    (partition (first db/board-dimensions)))]
     [:div {}
+     [game-score game-id]
      (for [row cards]
        [h-box :children (mapv display-card row)])]))
 
