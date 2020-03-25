@@ -5,6 +5,3 @@
 (defmethod swig-view/dispatch ::pre-game
   [tab]
   [:div "Pre game"])
-
-
-

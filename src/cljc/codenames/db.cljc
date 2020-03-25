@@ -129,16 +129,23 @@
              (swig/window {:swig/ident idents/modal-dialog})))
 
 (def board-layout
-  (swig/view  {:swig/ident :swig/main-view}
-              (swig/split {:swig/ident splits/game-split
-                           :swig.split/orientation :vertical
-                           :swig.split/split-percent 30}
-                          (swig/split {:swig/ident splits/game-info-split
-                                       :swig.split/split-percent 50
-                                       :swig.split/orientation :horizontal}
-                                      (swig/tab {:swig/ident tabs/score-board})
-                                      (swig/tab {:swig/ident tabs/player-board}))
-                          (swig/tab {:swig/ident tabs/game-board}))))
+  (swig/view  {:swig/ident :swig/main-view
+               :swig.view/active-tab [:swig/ident tabs/game]}
+              (swig/tab {:swig/ident tabs/leader-board
+                         :swig.tab/label {:swig/type :swig.type/cell
+                                          :swig.cell/element "Leader Board"}})
+              (swig/tab {:swig/ident tabs/game
+                         :swig.tab/label  {:swig/type :swig.type/cell
+                                           :swig.cell/element "Game"}}
+                        (swig/split {:swig/ident               splits/game-split
+                                     :swig.split/orientation   :vertical
+                                     :swig.split/split-percent 30}
+                                    (swig/split {:swig/ident               splits/game-info-split
+                                                 :swig.split/split-percent 50
+                                                 :swig.split/orientation   :horizontal}
+                                                (swig/tab {:swig/ident tabs/score-board})
+                                                (swig/tab {:swig/ident tabs/player-board}))
+                                    (swig/tab {:swig/ident tabs/game-board})))))
 
 (def schema-keys
   (into #{} (map :db/ident) full-schema))

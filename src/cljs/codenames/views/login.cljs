@@ -93,7 +93,6 @@
                   [modal-panel
                    :backdrop-color   "grey"
                    :backdrop-opacity 0.0
-                   :backdrop-on-click process-cancel
                    :style            {:font-family "Consolas"}
                    :child            [dialog-markup
                                       login-state
@@ -102,7 +101,7 @@
                                       process-cancel]])]]))
 
 (defmethod swig-view/dispatch idents/login-window [_]
-  [:img {:src "assets/brainos-background.jpg"
+  [:img {:src "assets/Inspiring_sunset.jpg"
          :style {:width "100vw"
                  :height "100vh"}}])
 
