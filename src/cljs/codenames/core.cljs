@@ -28,9 +28,11 @@
 (defonce _ (re-posh/connect! db/conn))
 
 (defn tx-log-listener [{:keys [db-before db-after tx-data tx-meta]}]
+  (js/console.log "META:" tx-meta)
   (let [facts (into [] (filter (comp db/schema-keys :a)) tx-data)]
     (when-not (empty? facts)
-      (sente/send-tx-data! facts))))
+      (cond (:tx/group-update? tx-meta) (sente/send-event! [:codenames.sente/group-facts facts])
+            :else (sente/send-event! [:codenames.sente/facts facts])))))
 
 (defonce init-db
   (do (swig/init db/login-layout)
@@ -56,7 +58,7 @@
 
 (defn ^:export init []
   (dev-setup)
-  (d/listen! db/conn ::tx-log-listener tx-log-listener)
+  (d/listen! db/conn ::tx-log-listener #'tx-log-listener)
   (swig/render [:swig/ident :swig/main-view]))
 
 (defonce initialization-block (init))

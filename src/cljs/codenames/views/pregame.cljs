@@ -6,8 +6,9 @@
    [codenames.subs.users :as user-subs]
    [codenames.subs.players :as player-subs]
    [codenames.subs.app-state :as app-subs]
+   [codenames.events.pregame :as pregame-events]
    [swig.views :as swig-view]
-   [re-com.core :refer [h-box]]
+   [re-com.core :refer [h-box v-box button line]]
    [re-posh.core :as re-posh]))
 
 (defmethod swig-view/dispatch tabs/red-team-tab
@@ -26,4 +27,12 @@
    :style {:flex "1 1 0%"}
    :children
    [[:div {:style {:width "500px" :height "100%"}} "Chat Box"]
-    child]])
+    [v-box
+     :style {:flex "1 1 0%"}
+     :gap "20px"
+     :children
+     [[button
+       :label "Start Game"
+       :on-click #(re-posh/dispatch [::pregame-events/enter-game])]
+      [line :size "2px"]
+      child]]]])

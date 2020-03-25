@@ -21,6 +21,10 @@
 
 (defmulti server-event first)
 
+(defmethod server-event ::facts
+  [[_ facts]]
+  (re-posh/dispatch [:codenames.events.facts/add-facts facts]))
+
 (defmethod server-event :codenames.sente/started-processing
   [_]
   (re-posh/dispatch [::server-events/set-server-status [:swig/ident idents/server-events] true]))
@@ -53,9 +57,9 @@
             (js/console.error e)))
         (when @running (recur))))))
 
-(defn send-tx-data! [tx-data]
+(defn send-event! [event]
   (if *chsk-send!*
-    (*chsk-send!* [::facts tx-data])
+    (*chsk-send!* event)
     (warnf "No send function")))
 
 (defn server-event-loop []
@@ -68,7 +72,7 @@
                                          force-send-ch))
                         (async/into [] results-channel))]
         (async/close! results-channel)
-        (send-tx-data! tx-data)
+        (send-event! [::facts tx-data])
         (recur)))
     [receive-channel force-send-ch]))
 

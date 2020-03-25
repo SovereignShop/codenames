@@ -28,9 +28,9 @@
                                     :attr        {:id "pf-username"}]]]
                        [v-box
                         :class    "form-group"
-                        :children [[:label {:for "pf-username"} "Group Name"]
+                        :children [[:label {:for "pf-groupname"} "Group Name"]
                                    [input-text
-                                    :model       (:username @form-data)
+                                    :model       (:groupname @form-data)
                                     :on-change   #(swap! form-data assoc :groupname %)
                                     :placeholder "Enter group name"
                                     :class       "form-control"
@@ -66,10 +66,10 @@
                          [line :color "#ddd" :style {:margin "10px 0 10px"}])
                        (case @login-state
                          :waiting [throbber :size :small :color "blue"]
-                         :failed [alert-box
-                                  :alert-type :danger
-                                  :heading "Login Failed!"
-                                  :body "Incorrect username or password."]
+                         :failed  [alert-box
+                                   :alert-type :danger
+                                   :heading "Login Failed!"
+                                   :body "Incorrect username or password."]
                          nil)]]])
 
 (defn modal-dialog
@@ -88,17 +88,18 @@
         process-cancel (fn [& _]
                          (re-posh/dispatch [:codenames.events.app-state/login-success])
                          false)]
-    [v-box
-     :children [(when @show?
-                  [modal-panel
-                   :backdrop-color   "grey"
-                   :backdrop-opacity 0.0
-                   :style            {:font-family "Consolas"}
-                   :child            [dialog-markup
-                                      login-state
-                                      form-data
-                                      process-ok
-                                      process-cancel]])]]))
+    (fn []
+      [v-box
+       :children [(when @show?
+                    [modal-panel
+                     :backdrop-color   "grey"
+                     :backdrop-opacity 0.0
+                     :style            {:font-family "Consolas"}
+                     :child            [dialog-markup
+                                        login-state
+                                        form-data
+                                        process-ok
+                                        process-cancel]])]])))
 
 (defmethod swig-view/dispatch idents/login-window [_]
   [:img {:src "assets/Inspiring_sunset.jpg"

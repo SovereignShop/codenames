@@ -50,24 +50,34 @@
   [_]
   (info "ping event"))
 
-(defmethod client-event ::facts
-  [{[_ datoms] :event uid :uid}]
-  (info "uid" uid)
+(defn insert-facts! [uid datoms group-update?]
+  (info "group-update?" group-update? uid)
   (let [user-facts  (filter (comp db/user-attributes :a) datoms)
         group-facts (filter (comp db/group-attributes :a) datoms)
         gid         (@uid->gid uid)]
-    (info "gid" gid)
-    (info "user facts" (vec user-facts))
-    (info "group-facts" (vec group-facts))
     (when (seq user-facts)
-      (facts/insert-facts! (facts/key->conn uid) user-facts))
+      (if group-update?
+        (doseq [other-uid (@gid->uids gid)]
+          (facts/insert-facts! (facts/key->conn other-uid facts/initial-user-facts) user-facts)
+          (when (not= other-uid uid)
+            (info "SENDING FACTS: " other-uid)
+            (*chsk-send!* other-uid [::facts user-facts])))
+        (facts/insert-facts! (facts/key->conn uid facts/initial-user-facts) user-facts)))
     (when (and (seq group-facts) gid)
-      (facts/insert-facts! (facts/key->conn gid) group-facts)
+      (facts/insert-facts! (facts/key->conn gid facts/initial-group-facts) group-facts)
       (if *chsk-send!*
         (doseq [other-uid (@gid->uids uid)
                 :when     (not= uid other-uid)]
           (*chsk-send!* other-uid [::facts group-facts])
           (warn "Undefined var: *chsk-send!*"))))))
+
+(defmethod client-event ::facts
+  [{[_ datoms] :event uid :uid}]
+  (insert-facts! uid datoms false))
+
+(defmethod client-event ::group-facts
+  [{[_ datoms] :event uid :uid}]
+  (insert-facts! uid datoms true))
 
 (defn init-sente! []
   (info "starting client receive loop")

@@ -53,7 +53,7 @@
         facts-str (facts/write-facts-str
                    (concat (d/datoms @(facts/key->conn username facts/initial-user-facts) :eavt)
                            (d/datoms @(facts/key->conn groupname facts/initial-group-facts) :eavt)))]
-    (swap! sente/gid->uids update groupname conj username)
+    (swap! sente/gid->uids update groupname #(conj (or % #{}) username))
     (swap! sente/uid->gid assoc username groupname)
     {:status  200
      :session (assoc session :uid username :gid groupname)
@@ -67,7 +67,7 @@
                    (concat (d/datoms @(facts/key->conn username facts/initial-user-facts) :eavt)
                            (d/datoms @(facts/key->conn groupname facts/initial-group-facts) :eavt)))]
     (info "groupname" groupname)
-    (swap! sente/gid->uids update groupname conj username)
+    (swap! sente/gid->uids update groupname #(conj (or % #{}) username))
     (swap! sente/uid->gid assoc username groupname)
     {:status  200
      :session (assoc session :uid username :gid groupname)

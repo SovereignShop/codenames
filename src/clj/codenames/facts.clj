@@ -43,7 +43,6 @@
 (def key->conn
   (memoize
    (fn
-     ([k] (key->conn k []))
      ([k initial-tx]
       (let [uri (str default-uri "/" k ".db")]
         (try (let [db-dir (io/file db-directory)]

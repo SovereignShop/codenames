@@ -129,8 +129,23 @@
              (swig/window {:swig/ident idents/modal-dialog})))
 
 (def pregame-layout
-  (swig/view {:swig/ident :swig/main-view
+  (swig/view {:swig/ident           :swig/main-view
               :swig.view/active-tab [:swig/ident tabs/pregame]}
+             (swig/tab {:swig/ident     tabs/leader-board
+                        :swig.tab/label {:swig/type         :swig.type/cell
+                                         :swig.cell/element "Leader Board"}})
+             (swig/tab {:swig/ident     tabs/game
+                        :swig.tab/label {:swig/type         :swig.type/cell
+                                         :swig.cell/element "Game"}}
+                       (swig/split {:swig/ident               splits/game-split
+                                    :swig.split/orientation   :vertical
+                                    :swig.split/split-percent 30}
+                                   (swig/split {:swig/ident               splits/game-info-split
+                                                :swig.split/split-percent 50
+                                                :swig.split/orientation   :horizontal}
+                                               (swig/tab {:swig/ident tabs/score-board})
+                                               (swig/tab {:swig/ident tabs/player-board}))
+                                   (swig/tab {:swig/ident tabs/game-board})))
              (swig/tab {:swig/ident     tabs/pregame
                         :swig.tab/label {:swig/type         :swig.type/cell
                                          :swig.cell/element "Pregame"}}
@@ -141,7 +156,7 @@
                                    (swig/tab {:swig/ident tabs/blue-team-tab})
                                    (swig/tab {:swig/ident tabs/red-team-tab})))))
 
-(def game-layout
+#_(def game-layout
   (swig/view  {:swig/ident           :swig/main-view
                :swig.view/active-tab [:swig/ident tabs/game]}
               (swig/tab {:swig/ident     tabs/leader-board

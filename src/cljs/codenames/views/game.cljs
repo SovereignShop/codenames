@@ -5,6 +5,7 @@
    [codenames.constants.ui-tabs :as tabs]
    [codenames.constants.ui-splits :as splits]
    [codenames.events.game :as game-events]
+   [codenames.events.pregame :as pregame-events]
    [codenames.db :as db]
    [swig.views :as swig-view]
    [re-posh.core :as re-posh]
@@ -28,9 +29,13 @@
 
 (defn board-info [game-id]
   [h-box
+   :gap "20px"
    :children
    [[button
      :on-click #(re-posh/dispatch [::game-events/new-game])
+     :label "New Round"]
+    [button
+     :on-click #(re-posh/dispatch [::pregame-events/enter-pregame])
      :label "New Game"]]])
 
 (defn board-grid [game-id]
