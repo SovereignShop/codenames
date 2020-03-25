@@ -1,10 +1,8 @@
-{:main               codenaems.core
- :externs            ["./externs.js"]
+{:main               codenames.core
  :closure-defines    {codenames.db/HOSTNAME "http://localhost"
                       codenames.db/PORT     "3001"}
- :pseudo-names       true
- :pretty-print       true
- :optimize-constants false ;; https://clojure.atlassian.net/browse/CLJS-3021
+ ;;:pseudo-names       true
+ ;;:pretty-print       true
  :optimizations      :advanced
  :asset-path         "/js/dev"
  :output-to          "resources/public/js/main.js"

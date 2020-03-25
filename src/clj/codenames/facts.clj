@@ -16,17 +16,24 @@
 (def db-directory "/var/lib/brain/fact-db")
 (def default-uri (format "datahike:file://%s" db-directory))
 
-(defn create-db! [uri]
+(def initial-user-facts
+  (into []
+        cat
+        [(mapv #(select-keys % [:db/ident :db/valueType :db/cardinality :db/unique])
+               (into swig/full-schema (remove :prop/group datascript-db/schema)))
+         (hiccup->facts datascript-db/pregame-layout)]))
+
+(def initial-group-facts
+  (into []
+        cat
+        [(mapv #(select-keys % [:db/ident :db/valueType :db/cardinality :db/unique])
+               (filter :prop/group datascript-db/schema))]))
+
+(defn create-db! [uri initial-tx]
   (try (let [db-dir (io/file db-directory)]
-           (when-not (.exists db-dir)
-             (.mkdir db-dir)))
-       (d/create-database uri
-                          :initial-tx
-                          (into []
-                                cat
-                                [(mapv #(select-keys % [:db/ident :db/valueType :db/cardinality :db/unique])
-                                       (into swig/full-schema datascript-db/schema))
-                                 (hiccup->facts datascript-db/board-layout)]))
+         (when-not (.exists db-dir)
+           (.mkdir db-dir)))
+       (d/create-database uri :initial-tx initial-tx)
        (d/connect uri)
        (catch clojure.lang.ExceptionInfo ex
          (case (:type (ex-data ex))
@@ -35,37 +42,25 @@
 
 (def key->conn
   (memoize
-   (fn [username]
-     (let [uri (str default-uri "/" username ".db")]
-       (try (let [db-dir (io/file db-directory)]
-              (when-not (.exists db-dir)
-                (.mkdir db-dir)))
-            (d/connect uri)
-            (catch clojure.lang.ExceptionInfo ex
-              (case (:type (ex-data ex))
-                :db-does-not-exist (create-db! uri)
-                (throw ex))))))))
-
-(defn to-float-array [^bytes bytes]
-  (let [dst (float-array (/ (alength bytes) Float/BYTES))
-        src (bs/convert bytes java.nio.ByteBuffer)]
-    (dotimes [i (alength dst)]
-      (aset dst i (.getFloat src)))
-    dst))
-
-(defn to-byte-array [^floats floats]
-  (let [dst (byte-array (* (alength bytes) Float/BYTES))
-        src (bs/convert bytes java.nio.ByteBuffer)]
-    (dotimes [i (alength dst)]
-      (aset dst i (.getByte src)))
-    dst))
+   (fn
+     ([k] (key->conn k []))
+     ([k initial-tx]
+      (let [uri (str default-uri "/" k ".db")]
+        (try (let [db-dir (io/file db-directory)]
+               (when-not (.exists db-dir)
+                 (.mkdir db-dir)))
+             (d/connect uri)
+             (catch clojure.lang.ExceptionInfo ex
+               (case (:type (ex-data ex))
+                 :db-does-not-exist (create-db! uri initial-tx)
+                 (throw ex)))))))))
 
 (defn map-facts [datom-fn serializer facts]
   (mapv (fn [[e a v t added?]]
-         (case a
-           (:codenames.character-card/position :codenames.word-card/position)
-           (datom-fn e a (serializer v) t added?)
-           (datom-fn e a v t added?)))
+          (case a
+            (:codenames.character-card/position :codenames.word-card/position)
+            (datom-fn e a (serializer v) t added?)
+            (datom-fn e a v t added?)))
         facts))
 
 (defn insert-facts! [conn facts]
@@ -79,9 +74,5 @@
 
 (comment
   (def base-layout (hiccup->facts datascript-db/layout))
-
   (d/delete-database default-uri)
-
-  (d/datoms @(key->conn "collins") :eavt 99 :swig.split/split-percent)
-
-  )
+  (d/datoms @(key->conn "collins") :eavt 99 :swig.split/split-percent))

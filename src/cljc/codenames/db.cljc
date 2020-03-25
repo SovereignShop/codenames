@@ -128,15 +128,28 @@
              (swig/window {:swig/ident idents/login-window})
              (swig/window {:swig/ident idents/modal-dialog})))
 
-(def board-layout
-  (swig/view  {:swig/ident :swig/main-view
+(def pregame-layout
+  (swig/view {:swig/ident :swig/main-view
+              :swig.view/active-tab [:swig/ident tabs/pregame]}
+             (swig/tab {:swig/ident     tabs/pregame
+                        :swig.tab/label {:swig/type         :swig.type/cell
+                                         :swig.cell/element "Pregame"}}
+                       (swig/split {:swig/ident               splits/team-selection-split
+                                    :swig.dispatch/handler    splits/team-selection-split
+                                    :swig.split/split-percent 50
+                                    :swig.split/orientation   :vertical}
+                                   (swig/tab {:swig/ident tabs/blue-team-tab})
+                                   (swig/tab {:swig/ident tabs/red-team-tab})))))
+
+(def game-layout
+  (swig/view  {:swig/ident           :swig/main-view
                :swig.view/active-tab [:swig/ident tabs/game]}
-              (swig/tab {:swig/ident tabs/leader-board
-                         :swig.tab/label {:swig/type :swig.type/cell
+              (swig/tab {:swig/ident     tabs/leader-board
+                         :swig.tab/label {:swig/type         :swig.type/cell
                                           :swig.cell/element "Leader Board"}})
-              (swig/tab {:swig/ident tabs/game
-                         :swig.tab/label  {:swig/type :swig.type/cell
-                                           :swig.cell/element "Game"}}
+              (swig/tab {:swig/ident          tabs/game
+                         :swig.tab/label      {:swig/type         :swig.type/cell
+                                               :swig.cell/element "Game"}}
                         (swig/split {:swig/ident               splits/game-split
                                      :swig.split/orientation   :vertical
                                      :swig.split/split-percent 30}
@@ -147,47 +160,56 @@
                                                 (swig/tab {:swig/ident tabs/player-board}))
                                     (swig/tab {:swig/ident tabs/game-board})))))
 
-(def schema-keys
-  (into #{} (map :db/ident) full-schema))
-
 (defonce default-db (into [] cat [game-state extras]))
 
 (def schema
-  [{:db/ident :turn/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
-   {:db/ident :turn/game :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
-   {:db/ident :group/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
-   {:db/ident :group/name :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
-   {:db/ident :user/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
-   {:db/ident :user/name :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
-   {:db/ident :user/alias :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
-   {:db/ident :game/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
-   {:db/ident :game/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
-   {:db/ident :game/teams :db/valueType :db.type/ref :db/cardinality :db.cardinality/many}
-   {:db/ident :game/finished? :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one}
-   {:db/ident :codenames.team/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
-   {:db/ident :codenames.team/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
-   {:db/ident :codenames.team/color :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
-   {:db/ident :codenames.team/players :db/valueType :db.type/ref :db/cardinality :db.cardinality/many}
-   {:db/ident :codenames.player/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one}
-   {:db/ident :codenames.player/user :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
-   {:db/ident :codenames.player/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one}
-   {:db/ident :codenames.app-state/current-teams :db/valueType :db.type/ref :db/cardinality :db.cardinality/many}
-   {:db/ident :codenames.game-state/current-team :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
-   {:db/ident :codenames.player-state/team :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
-   {:db/ident :codenames.player-state/player :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
-   {:db/ident :codenames.piece/game :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
-   {:db/ident :codenames.piece/type :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
-   {:db/ident :codenames.word-card/character-card :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
-   {:db/ident :codenames.word-card/position :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
-   {:db/ident :codenames.word-card/word :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
-   {:db/ident :codenames.character-card/color :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
-   {:db/ident :codenames.character-card/role :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one}
-   {:db/ident :transaction/tx-meta :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
-   {:db/ident :transaction/tx-added :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
-   {:db/ident :transaction/tx-entities :db/valueType :db.type/string :db/cardinality :db.cardinality/one}
-   {:db/ident :ui/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one}
-   {:db/ident :popover/showing? :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one}
-   {:db/ident :app/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one}])
+  [{:db/ident :turn/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :turn/game :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :group/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :group/name :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :group/users :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :prop/group true}
+   {:db/ident :user/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :user/name :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :user/alias :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :game/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :game/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :game/teams :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :prop/group true}
+   {:db/ident :game/finished? :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.team/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.team/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.team/color :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.team/players :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :prop/group true}
+   {:db/ident :codenames.player/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.player/user :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.player/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.app-state/current-teams :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :prop/group true}
+   {:db/ident :codenames.app-state/group :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.game-state/current-team :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.player-state/team :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.player-state/player :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.piece/game :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.piece/type :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.word-card/character-card :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.word-card/position :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.word-card/word :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.character-card/color :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.character-card/role :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :ui/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :popover/showing? :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :app/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one :prop/group true}])
+
+(def schema-keys
+  (into #{} (map :db/ident) full-schema))
+
+(def user-attributes
+  (into #{} (comp cat (map :db/ident)) [schema full-schema]))
+
+(user-attributes :swig.tab/order)
+
+(def group-attributes
+  (into #{} (comp cat (filter :prop/group) (map :db/ident)) [schema full-schema]))
+
+(group-attributes :swig.tab/order)
 
 (defn to-ds-schema [schema]
   (into {:db/ident {:db/unique :db.unique/identity}}

@@ -83,7 +83,7 @@
                  ragtime                                {:mvn/version "0.8.0"}
                  clj-commons/clj-yaml                   {:mvn/version "0.7.0"}
                  compojure                              {:mvn/version "1.6.1"}}
-   :main-opts   ["-m" "assist-analysis.core"]
+   :main-opts   ["-m" "codenames.core"]
    :extra-paths ["src/clj" "resources"]
    :jvm-opts    ["-Xmx6g"]}
 
@@ -144,7 +144,7 @@
 
   :aot
   {:extra-paths ["target/classes"]
-   :main-opts   ["-e" "(compile,'assist-analysis.core)"]}
+   :main-opts   ["-e" "(compile,'codenames.core)"]}
 
   :build
   {:extra-paths ["build"]

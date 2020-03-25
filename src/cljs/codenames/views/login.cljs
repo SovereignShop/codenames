@@ -34,7 +34,7 @@
                                     :on-change   #(swap! form-data assoc :groupname %)
                                     :placeholder "Enter group name"
                                     :class       "form-control"
-                                    :attr        {:id "pf-username"}]]]
+                                    :attr        {:id "pf-groupname"}]]]
                        [v-box
                         :class    "form-group"
                         :children [[:label {:for "pf-password"} "Password"]

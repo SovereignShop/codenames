@@ -29,7 +29,8 @@
   (route/not-found (handlers/four-oh-four)))
 
 (defn sente-route-wrapper [& params]
-  (binding [sente/*current-uid* (-> params first :session :uid)]
+  (binding [sente/*current-uid* (-> params first :session :uid)
+            sente/*current-gid* (-> params first :session :gid)]
     (when-not (nil? sente/*current-uid*)
       (sente/*chsk-send!* sente/*current-uid* [:codenames.sente/started-processing]))
     (let [ret (apply routes params)]

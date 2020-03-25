@@ -1,10 +1,12 @@
 (ns codenames.handlers
   (:require
    [codenames.db :as db]
+   [codenames.sente :as sente]
    [hiccup.page :as h]
    [codenames.facts :as facts]
    [ring.middleware.anti-forgery :as anti-forgery]
-   [datahike.core :as d]))
+   [datahike.core :as d]
+   [taoensso.timbre :as timbre :refer [debug info warn error]]))
 
 (def default-headers
   {"Content-type"                 "application/edn"
@@ -46,18 +48,28 @@
 
 (defn create-group
   [{:keys [session params] :as req}]
-  (let [{:keys [groupname]} params
-        facts-str           (facts/write-facts-str (d/datoms @(facts/key->conn "wtf14") :eavt))]
+  (let [{:keys [groupname username password create?]
+         }        params
+        facts-str (facts/write-facts-str
+                   (concat (d/datoms @(facts/key->conn username facts/initial-user-facts) :eavt)
+                           (d/datoms @(facts/key->conn groupname facts/initial-group-facts) :eavt)))]
+    (swap! sente/gid->uids update groupname conj username)
+    (swap! sente/uid->gid assoc username groupname)
     {:status  200
-     :session (assoc session :uid groupname)
+     :session (assoc session :uid username :gid groupname)
      :body    facts-str
      :headers default-headers}))
 
 (defn join-group
   [{:keys [session params] :as req}]
-  (let [{:keys [groupname]} params
-        facts-str           (facts/write-facts-str (d/datoms @(facts/key->conn groupname) :eavt))]
+  (let [{:keys [groupname username password create?]} params
+        facts-str (facts/write-facts-str
+                   (concat (d/datoms @(facts/key->conn username facts/initial-user-facts) :eavt)
+                           (d/datoms @(facts/key->conn groupname facts/initial-group-facts) :eavt)))]
+    (info "groupname" groupname)
+    (swap! sente/gid->uids update groupname conj username)
+    (swap! sente/uid->gid assoc username groupname)
     {:status  200
-     :session (assoc session :uid groupname)
+     :session (assoc session :uid username :gid groupname)
      :body    facts-str
      :headers default-headers}))

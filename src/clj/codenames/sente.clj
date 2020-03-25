@@ -1,5 +1,6 @@
 (ns codenames.sente
   (:require
+   [codenames.db :as db]
    [codenames.facts :as facts]
    [codenames.sente-common :as sente-common]
    [clojure.core.async :refer [go-loop <! put!]]
@@ -25,6 +26,9 @@
     (def ^{:dynamic true} *connected-uids*                connected-uids) ; Watchable, read-only atom
     ))
 
+(defonce gid->uids (atom {}))
+(defonce uid->gid (atom {}))
+
 (def ^:dynamic *current-uid* nil)
 
 (timbre/merge-config! {:middleware [(fn [data]
@@ -47,9 +51,23 @@
   (info "ping event"))
 
 (defmethod client-event ::facts
-  [{[_ datoms] :event username :uid}]
-  (info "inserting facts!")
-  (facts/insert-facts! (facts/key->conn username) datoms))
+  [{[_ datoms] :event uid :uid}]
+  (info "uid" uid)
+  (let [user-facts  (filter (comp db/user-attributes :a) datoms)
+        group-facts (filter (comp db/group-attributes :a) datoms)
+        gid         (@uid->gid uid)]
+    (info "gid" gid)
+    (info "user facts" (vec user-facts))
+    (info "group-facts" (vec group-facts))
+    (when (seq user-facts)
+      (facts/insert-facts! (facts/key->conn uid) user-facts))
+    (when (and (seq group-facts) gid)
+      (facts/insert-facts! (facts/key->conn gid) group-facts)
+      (if *chsk-send!*
+        (doseq [other-uid (@gid->uids uid)
+                :when     (not= uid other-uid)]
+          (*chsk-send!* other-uid [::facts group-facts])
+          (warn "Undefined var: *chsk-send!*"))))))
 
 (defn init-sente! []
   (info "starting client receive loop")

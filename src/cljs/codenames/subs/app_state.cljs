@@ -5,6 +5,12 @@
    [swig.macros :refer-macros [def-sub]]
    [taoensso.timbre :refer-macros [debug info warn]]))
 
+(def-sub ::group-id
+  [:find ?group-id .
+   :in $
+   :where
+   [?id :codenames.app-state/group ?group-id]])
+
 (def-sub ::current-game
   [:find ?current-game-id .
    :in $
