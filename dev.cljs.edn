@@ -2,14 +2,10 @@
  :infer-externs   true
  :optimizations   :none
  :pretty-print    true
- :preloads        [devtools.preload day8.re-frame-10x.preload figwheel.main figwheel.repl.preload
-                   codenames.events.facts
-                   codenames.events.game
-                   codenames.events.pregame
-                   codenames.events.server
-                   codenames.views.login
-                   codenames.views.game
-                   codenames.views.pregame]
+ :preloads        [devtools.preload
+                   day8.re-frame-10x.preload
+                   figwheel.main
+                   figwheel.repl.preload]
  :source-map      true
  :asset-path      "/js/dev"
  :output-to       "resources/public/js/main.js"

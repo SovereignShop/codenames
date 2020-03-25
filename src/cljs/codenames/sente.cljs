@@ -21,11 +21,11 @@
 
 (defmulti server-event first)
 
-(defmethod server-event :assist-analysis.sente/started-processing
+(defmethod server-event :codenames.sente/started-processing
   [_]
   (re-posh/dispatch [::server-events/set-server-status [:swig/ident idents/server-events] true]))
 
-(defmethod server-event :assist-analysis.sente/finished-processing
+(defmethod server-event :codenames.sente/finished-processing
   [_]
   (re-posh/dispatch [::server-events/set-server-status [:swig/ident idents/server-events] false]))
 

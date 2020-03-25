@@ -1,5 +1,6 @@
 (ns codenames.constants.ui-idents)
 
+(def app-state                ::app-state)
 (def routes-scale-factor      ::routes-scale-factor)
 (def fullscreen-view          ::fullscreen-view)
 (def main-popover             ::main-popover)

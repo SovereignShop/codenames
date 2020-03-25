@@ -1,6 +1,10 @@
 (ns ^:figwheel-hooks codenames.core
   (:require
    [codenames.events.app-state :as app-events]
+   [codenames.constants.ui-idents]
+   [codenames.constants.ui-tabs]
+   [codenames.constants.ui-splits]
+   [codenames.constants.ui-views]
    [codenames.events.facts]
    [codenames.events.game]
    [codenames.events.pregame]
@@ -8,6 +12,10 @@
    [codenames.views.login]
    [codenames.views.game]
    [codenames.views.pregame]
+   [codenames.subs.game]
+   [codenames.subs.pregame]
+   [codenames.subs.app-state]
+   [codenames.utils]
    [codenames.db :as db]
    [codenames.sente :as sente]
    [codenames.config :as config]
@@ -27,8 +35,6 @@
 (defonce init-db
   (do (swig/init db/login-layout)
       (re-posh/dispatch-sync [::app-events/initialize-db])))
-
-(methods swig-view/dispatch)
 
 (defmethod swig-view/dispatch :swig.type/cell
   ([{:keys [:db/id
