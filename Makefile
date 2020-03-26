@@ -15,7 +15,7 @@ docker: target/classes/codenames/core.class
 
 deploy: docker
 	docker push jmicahc/codenames:test
-	aws ecs update-service --service docker-codenames-service --region us-west-1 --cluster codenames-cluser --force-new-deployment
+	aws ecs update-service --service docker-codenames-service --region us-west-1 --cluster codenames-cluster --force-new-deployment
 
 clean:
 	rm -fr resources/public/js
