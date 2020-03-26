@@ -31,15 +31,6 @@
 
 (def ^:dynamic *current-uid* nil)
 
-(timbre/merge-config! {:middleware [(fn [data]
-                                      (when-not (nil? *current-uid*)
-                                        (*chsk-send!* *current-uid*
-                                                      [::log (select-keys data [:instant
-                                                                                :vargs
-                                                                                :?ns-str
-                                                                                :level])]))
-                                      data)]})
-
 (defmulti client-event (comp first :event))
 
 (defmethod client-event :default

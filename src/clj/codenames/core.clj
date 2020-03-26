@@ -18,7 +18,8 @@
    [taoensso.timbre.appenders.carmine :as car-appender]
    [taoensso.timbre.appenders.core :refer [println-appender]]
    [taoensso.timbre :as timbre :refer [debug info warn]]
-   [org.httpkit.server :refer [run-server]]))
+   [org.httpkit.server :refer [run-server]])
+  (:gen-class))
 
 (defroutes routes
   (GET  "/" [& params] handlers/common)
@@ -29,8 +30,7 @@
   (route/not-found (handlers/four-oh-four)))
 
 (defn sente-route-wrapper [& params]
-  (binding [sente/*current-uid* (-> params first :session :uid)
-            sente/*current-gid* (-> params first :session :gid)]
+  (binding [sente/*current-uid* (-> params first :session :uid)]
     (when-not (nil? sente/*current-uid*)
       (sente/*chsk-send!* sente/*current-uid* [:codenames.sente/started-processing]))
     (let [ret (apply routes params)]

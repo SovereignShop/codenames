@@ -1,7 +1,7 @@
 (ns codenames.query
   (:require
    [cljs-http.client :as http]
-   [codenames.db :as db :refer [HOSTNAME PORT]]
+   [codenames.db :as db]
    [codenames.constants.ui-idents :as idents]
    [codenames.constants.ui-views :as views]
    [codenames.events.facts :as fact-events]
@@ -66,7 +66,7 @@
    (let [q-str (prn-str query)
          result (chan)]
      (request
-      {:uri (gstr/format "%s:%s/query" HOSTNAME PORT)
+      {:uri (gstr/format "%squery" js/window.location.href)
        :method :get
        :edn? false
        :params {:query q-str :datoms? datoms?}  ;; TODO: GET request body?
@@ -86,7 +86,7 @@
 
 (defn send-request
   ([{:keys [url endpoint]
-     :or {url (gstr/format "%s:%s" HOSTNAME PORT)
+     :or {url js/window.location.href
           endpoint "/query"}
      :as opts}]
    (let [result (chan)]
@@ -109,7 +109,7 @@
 (defn do-login [credentials]
   (re-posh/dispatch [:codenames.events.app-state/login-waiting])
   (request
-   {:uri (gstr/format "%s:%s/login" HOSTNAME PORT)
+   {:uri (gstr/format "%slogin" js/window.location.href)
     :method :get
     :edn? false
     :params credentials

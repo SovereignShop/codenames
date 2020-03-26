@@ -13,7 +13,7 @@
   (:import
    [org.apache.commons.io FilenameUtils]))
 
-(def db-directory "/var/lib/brain/fact-db")
+(def db-directory "/var/lib/codenames/fact-db")
 (def default-uri (format "datahike:file://%s" db-directory))
 
 (def initial-user-facts
@@ -32,7 +32,7 @@
 (defn create-db! [uri initial-tx]
   (try (let [db-dir (io/file db-directory)]
          (when-not (.exists db-dir)
-           (.mkdir db-dir)))
+           (.mkdirs db-dir)))
        (d/create-database uri :initial-tx initial-tx)
        (d/connect uri)
        (catch clojure.lang.ExceptionInfo ex

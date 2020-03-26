@@ -13,6 +13,10 @@ build: target/classes/codenames/core.class
 docker: target/classes/codenames/core.class
 	docker build --rm -t jmicahc/rad:${VERSION} .
 
+deploy: docker
+	docker push jmicahc/codenames:test
+	aws ecs update-service --service docker-codenames-service --region us-west-1 --cluster codenames-cluser --force-new-deployment
+
 clean:
 	rm -fr resources/public/js
 	rm -fr target

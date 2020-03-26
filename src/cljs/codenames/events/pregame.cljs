@@ -22,9 +22,11 @@
 (def-event-ds ::choose-color [db _]
   [])
 
-(def-event-ds ::choose-player-type [db _] [])
+(def-event-ds ::choose-player-type [db _]
+  [])
 
-(def-event-ds ::randomize-teams [db _] [])
+(def-event-ds ::randomize-teams [db _]
+  [])
 
-(def-event-ds ::set-timer-length [db _] [])
-
+(def-event-ds ::set-timer-length [db _]
+  [])
