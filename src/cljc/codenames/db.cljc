@@ -184,8 +184,8 @@
    {:db/ident :group/name :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :group/users :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :prop/group true}
    {:db/ident :user/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
-   {:db/ident :user/name :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
-   {:db/ident :user/alias :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :user/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :user/alias :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :game/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :game/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :game/teams :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :prop/group true}

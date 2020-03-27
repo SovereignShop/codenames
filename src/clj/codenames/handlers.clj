@@ -1,6 +1,8 @@
 (ns codenames.handlers
   (:require
    [codenames.db :as db]
+   [codenames.utils :as utils]
+   [codenames.queries :as queries]
    [codenames.sente :as sente]
    [hiccup.page :as h]
    [codenames.facts :as facts]
@@ -48,11 +50,18 @@
 
 (defn create-group
   [{:keys [session params] :as req}]
-  (let [{:keys [groupname username password create?]
-         }        params
+  (let [{:keys [groupname username password create?]} params
+        user-conn (facts/key->conn username facts/initial-user-facts)
+        group-conn (d/datoms @(facts/key->conn groupname facts/initial-group-facts) :eavt)
+        user (queries/get-user @user-conn username)
+        group (queries/get-group @user-conn groupname)
+        _ (d/transact! group-conn
+                       [(assoc (or user (utils/make-user username)) :db/id -1)
+                        (assoc (or group (utils/make-group groupname)) :group/users [-1])])
         facts-str (facts/write-facts-str
-                   (concat (d/datoms @(facts/key->conn username facts/initial-user-facts) :eavt)
-                           (d/datoms @(facts/key->conn groupname facts/initial-group-facts) :eavt)))]
+                   (concat (d/datoms @user-conn :eavt)
+                           (d/datoms @group-conn :eavt)
+                           user-tx))]
     (swap! sente/gid->uids update groupname #(conj (or % #{}) username))
     (swap! sente/uid->gid assoc username groupname)
     {:status  200
@@ -63,13 +72,32 @@
 (defn join-group
   [{:keys [session params] :as req}]
   (let [{:keys [groupname username password create?]} params
+        user-conn (facts/key->conn username facts/initial-user-facts)
+        group-conn (d/datoms @(facts/key->conn groupname facts/initial-group-facts) :eavt)
+        user (queries/get-user @user-conn username)
+        group (queries/get-group @user-conn groupname)
+        _ (d/transact! group-conn
+                       [(assoc (or user (utils/make-user username)) :db/id -1)
+                        (assoc (or group (utils/make-group groupname)) :group/users [-1])])
         facts-str (facts/write-facts-str
-                   (concat (d/datoms @(facts/key->conn username facts/initial-user-facts) :eavt)
-                           (d/datoms @(facts/key->conn groupname facts/initial-group-facts) :eavt)))]
-    (info "groupname" groupname)
+                   (concat (d/datoms @user-conn :eavt)
+                           (d/datoms @group-conn :eavt)
+                           user-tx))]
     (swap! sente/gid->uids update groupname #(conj (or % #{}) username))
     (swap! sente/uid->gid assoc username groupname)
     {:status  200
      :session (assoc session :uid username :gid groupname)
      :body    facts-str
      :headers default-headers}))
+
+(comment
+  (require '[codenames.db :as db])
+  (d/transact (facts/key->conn "collins" facts/initial-user-facts) 
+              (map #(select-keys % [:db/ident :db/valueType :db/cardinality])
+                   db/schema))
+
+  (def user-tx (d/transact! (facts/key->conn "collins" facts/initial-user-facts)
+                           [(utils/make-user "collins")]))
+  (keys @user-tx)
+
+  )

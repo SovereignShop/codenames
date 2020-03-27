@@ -63,6 +63,26 @@
           (comp cat (map #(assoc % :codenames.piece/game -1)))
           [board-cards red-cards blue-cards neutral-cards assasin-cards])))
 
+(defn make-user
+  ([username]
+   (make-user username username))
+  ([username alias]
+   (make-user username alias (make-random-uuid)))
+  ([username alias id]
+   {:user/name  username
+    :user/alias alias
+    :user/id    id}))
+
+(defn make-group
+  ([groupname]
+   (make-group groupname (make-random-uuid)))
+  ([groupname uuid]
+   (make-group groupname uuid []))
+  ([groupname uuid users]
+   {:group/name groupname
+    :group/id uuid
+    :group/users users}))
+
 (comment
   (make-game db/words db/board-dimensions)
   (require '[datascript.core :as d])
