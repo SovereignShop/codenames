@@ -3,6 +3,7 @@
    [codenames.db :as db]
    [codenames.facts :as facts]
    [codenames.sente-common :as sente-common]
+   [codenames.queries :as queries]
    [clojure.core.async :refer [go-loop <! put!]]
    [compojure.core :refer [defroutes]]
    [compojure.core :refer [GET POST]]
@@ -41,34 +42,36 @@
   [_]
   (info "ping event"))
 
-(defn insert-facts! [uid datoms group-update?]
-  (info "group-update?" group-update? uid)
+(defn insert-facts! [username groupname datoms group-update?]
+  (info "group-update?" group-update?)
   (let [user-facts  (filter (comp db/user-attributes :a) datoms)
         group-facts (filter (comp db/group-attributes :a) datoms)
-        gid         (@uid->gid uid)]
+        user-conn   (facts/key->conn username facts/initial-user-facts)
+        group-conn  (facts/key->conn groupname facts/initial-group-facts)]
     (when (seq user-facts)
+      (info "facts!" (vec user-facts))
       (if group-update?
-        (doseq [other-uid (@gid->uids gid)]
-          (facts/insert-facts! (facts/key->conn other-uid facts/initial-user-facts) user-facts)
-          (when (not= other-uid uid)
-            (info "SENDING FACTS: " other-uid)
-            (*chsk-send!* other-uid [::facts user-facts])))
-        (facts/insert-facts! (facts/key->conn uid facts/initial-user-facts) user-facts)))
-    (when (and (seq group-facts) gid)
-      (facts/insert-facts! (facts/key->conn gid facts/initial-group-facts) group-facts)
+        (doseq [{other-username :user/name} (queries/groupname->users @group-conn groupname)]
+          (facts/insert-facts! (facts/key->conn other-username facts/initial-user-facts) user-facts)
+          (when (not= other-username username)
+            (info "SENDING FACTS: " other-username)
+            (*chsk-send!* other-username [::facts user-facts])))
+        (facts/insert-facts! user-conn user-facts)))
+    (when (seq group-facts)
+      (facts/insert-facts! group-conn group-facts)
       (if *chsk-send!*
-        (doseq [other-uid (@gid->uids uid)
-                :when     (not= uid other-uid)]
-          (*chsk-send!* other-uid [::facts group-facts])
-          (warn "Undefined var: *chsk-send!*"))))))
+        (doseq [{other-username :user/name} (queries/groupname->users @group-conn groupname)
+                :when                       (not= other-username username)]
+          (*chsk-send!* other-username [::facts group-facts]))
+        (warn "Undefined var: *chsk-send!*")))))
 
 (defmethod client-event ::facts
-  [{[_ datoms] :event uid :uid}]
-  (insert-facts! uid datoms false))
+  [{[_ {:keys [gid datoms]}] :event uid :uid}]
+  (insert-facts! uid gid datoms false))
 
 (defmethod client-event ::group-facts
-  [{[_ datoms] :event uid :uid}]
-  (insert-facts! uid datoms true))
+  [{[_ {:keys [gid datoms]}] :event uid :uid}]
+  (insert-facts! uid gid datoms true))
 
 (defn init-sente! []
   (info "starting client receive loop")

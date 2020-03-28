@@ -53,17 +53,16 @@
   (let [{:keys [groupname username password create?]
          }         params
         user-conn  (facts/key->conn username facts/initial-user-facts)
-        group-conn (d/datoms @(facts/key->conn groupname facts/initial-group-facts) :eavt)
+        group-conn (facts/key->conn groupname facts/initial-group-facts)
         user       (queries/get-user @user-conn username)
         group      (queries/get-group @user-conn groupname)
+        user-id    (or (:db/id user) -1)
         _          (d/transact! group-conn
-                                [(assoc (or user (utils/make-user username)) :db/id -1)
-                                 (assoc (or group (utils/make-group groupname)) :group/users [-1])])
+                                [(assoc (or user (utils/make-user username)) :db/id user-id)
+                                 (assoc (or group (utils/make-group groupname)) :group/users [user-id])])
         facts-str  (facts/write-facts-str
                     (concat (d/datoms @user-conn :eavt)
                             (d/datoms @group-conn :eavt)))]
-    (swap! sente/gid->uids update groupname #(conj (or % #{}) username))
-    (swap! sente/uid->gid assoc username groupname)
     {:status  200
      :session (assoc session :uid username :gid groupname)
      :body    facts-str
@@ -74,17 +73,16 @@
   (let [{:keys [groupname username password create?]
          }         params
         user-conn  (facts/key->conn username facts/initial-user-facts)
-        group-conn (d/datoms @(facts/key->conn groupname facts/initial-group-facts) :eavt)
+        group-conn (facts/key->conn groupname facts/initial-group-facts)
         user       (queries/get-user @user-conn username)
         group      (queries/get-group @user-conn groupname)
+        user-id    (or (:db/id user) -1)
         _          (d/transact! group-conn
-                                [(assoc (or user (utils/make-user username)) :db/id -1)
-                                 (assoc (or group (utils/make-group groupname)) :group/users [-1])])
+                                [(assoc (or user (utils/make-user username)) :db/id user-id)
+                                 (assoc (or group (utils/make-group groupname)) :group/users [user-id])])
         facts-str  (facts/write-facts-str
                     (concat (d/datoms @user-conn :eavt)
                             (d/datoms @group-conn :eavt)))]
-    (swap! sente/gid->uids update groupname #(conj (or % #{}) username))
-    (swap! sente/uid->gid assoc username groupname)
     {:status  200
      :session (assoc session :uid username :gid groupname)
      :body    facts-str
@@ -97,7 +95,7 @@
                    db/schema))
 
   (def user-tx (d/transact! (facts/key->conn "collins" facts/initial-user-facts)
-                           [(utils/make-user "collins")]))
+                            [(utils/make-user "collins")]))
   (keys @user-tx)
 
   )

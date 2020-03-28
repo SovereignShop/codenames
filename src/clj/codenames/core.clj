@@ -30,13 +30,16 @@
   (route/not-found (handlers/four-oh-four)))
 
 (defn sente-route-wrapper [& params]
-  (binding [sente/*current-uid* (-> params first :session :uid)]
-    (when-not (nil? sente/*current-uid*)
-      (sente/*chsk-send!* sente/*current-uid* [:codenames.sente/started-processing]))
-    (let [ret (apply routes params)]
+  (let [session (-> params first :session)
+        uid (:uid session)
+        groupname (:gid session)]
+    (binding [sente/*current-uid* uid]
       (when-not (nil? sente/*current-uid*)
-        (sente/*chsk-send!* sente/*current-uid* [:codenames.sente/finished-processing]))
-      ret)))
+        (sente/*chsk-send!* sente/*current-uid* [:codenames.sente/started-processing]))
+      (let [ret (apply routes params)]
+        (when-not (nil? sente/*current-uid*)
+          (sente/*chsk-send!* sente/*current-uid* [:codenames.sente/finished-processing]))
+        ret))))
 
 (def application (wrap-cors (wrap-defaults sente-route-wrapper
                                            (-> site-defaults
