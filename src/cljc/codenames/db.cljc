@@ -178,12 +178,15 @@
 (defonce default-db (into [] cat [game-state extras]))
 
 (def schema
-  [{:db/ident :turn/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
+  [{:db/ident :session/user :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
+   {:db/ident :session/group :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
+   {:db/ident :session/game :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
+   {:db/ident :turn/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :turn/game :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
-   {:db/ident :group/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :group/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true :db/unique :db.unique/identity}
    {:db/ident :group/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :group/users :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :prop/group true}
-   {:db/ident :user/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :user/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true :db/unique :db.unique/identity}
    {:db/ident :user/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :user/alias :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :game/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
@@ -217,7 +220,7 @@
   (into #{} (map :db/ident) full-schema))
 
 (def user-attributes
-  (into #{} (comp cat (map :db/ident)) [schema full-schema]))
+  (into #{} (comp cat (remove :prop/group) (map :db/ident)) [schema full-schema]))
 
 (user-attributes :swig.tab/order)
 

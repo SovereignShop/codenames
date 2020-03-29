@@ -11,7 +11,7 @@ target/classes/codenames/core.class: deps.edn src/**/* target
 build: target/classes/codenames/core.class
 
 docker: target/classes/codenames/core.class
-	docker build --rm -t jmicahc/rad:${VERSION} .
+	docker build --rm -t jmicahc/codenames:test .
 
 deploy: docker
 	docker push jmicahc/codenames:test

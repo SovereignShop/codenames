@@ -54,7 +54,6 @@
         (doseq [{other-username :user/name} (queries/groupname->users @group-conn groupname)]
           (facts/insert-facts! (facts/key->conn other-username facts/initial-user-facts) user-facts)
           (when (not= other-username username)
-            (info "SENDING FACTS: " other-username)
             (*chsk-send!* other-username [::facts user-facts])))
         (facts/insert-facts! user-conn user-facts)))
     (when (seq group-facts)
@@ -82,6 +81,19 @@
         (info "Exiting")
         (do (client-event x)
             (recur))))))
+
+#_(defn tx-log-listener [{:keys [db-before db-after tx-data tx-meta]}]
+  (let [facts (into [] (filter (comp db/schema-keys :a)) tx-data)
+        gid   (d/q '[:find ?groupname .
+                     :in $
+                     :where
+                     [?id :group/name ?groupname]]
+                   db-after)]
+    (when-not (empty? facts)
+      (cond (:tx/group-update? tx-meta) (client-event [:codenames.sente/group-facts {:gid gid
+                                                                                     :datoms facts}])
+            :else (client-event [:codenames.sente/facts {:gid gid
+                                                         :datoms facts}])))))
 
 (timbre/set-level! :info)
 

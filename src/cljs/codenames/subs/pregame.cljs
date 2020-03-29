@@ -3,9 +3,26 @@
   (:require
    [datascript.core :as d]
    [codenames.db :as db]
-   [swig.macros :refer [def-pull-many-sub]]))
+   [swig.macros :refer [def-sub]]))
 
-(def-pull-many-sub ::players
-  [:player/name
-   :player/color
-   :player/tpye])
+(def-sub ::players
+  [:find (pull ?pid [:codenames.player/type
+                     :codenames.player/name
+                     :codenames.player/user])
+   :in $ ?color ?gid
+   :where
+   [?gid :game/teams ?tid]
+   [?tid :codenames.team/color ?color]
+   [?tid :codenames.team/players ?pid]])
+
+(def-sub ::games
+  [:find (pull ?pid [:game])])
+
+(def-sub ::open-games
+  [:find (pull ?id [:game/finished?
+                    :game/id
+                    :game/name
+                    :game/teams])
+   :in $
+   :where
+   [?id :game/finished? false]])

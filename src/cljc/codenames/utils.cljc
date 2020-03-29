@@ -45,22 +45,15 @@
   (repeat n {:codenames.character-card/color color
              :codenames.character-card/played? false}))
 
-(defn make-game [teams word-bank board-dimensions]
+(defn make-game-pieces [game-id word-bank board-dimensions]
   (let [first-player   (nth [:red :blue] (rand-int 2))
         board-cards    (make-board-cards word-bank board-dimensions)
         red-cards      (make-investigator-cards :red (case first-player :red 9 8))
         blue-cards     (make-investigator-cards :blue (case first-player :blue 9 8))
         neutral-cards  (make-investigator-cards :neutral 7)
-        assasin-cards  (make-investigator-cards :assassin 1)
-        game           {:db/id         -1
-                        :game/id       (make-random-uuid)
-                        :game/finshed? false
-                        :game/teams    teams}
-        teams-by-color (group-by :codenames.team/color teams)
-        app-state      {:swig/ident                        idents/app-state
-                        :codenames.game-state/current-team (first (teams-by-color first-player))}]
-    (into [game app-state]
-          (comp cat (map #(assoc % :codenames.piece/game -1)))
+        assasin-cards  (make-investigator-cards :assassin 1)]
+    (into []
+          (comp cat (map #(assoc % :codenames.piece/game game-id)))
           [board-cards red-cards blue-cards neutral-cards assasin-cards])))
 
 (defn make-user
@@ -82,6 +75,37 @@
    {:group/name groupname
     :group/id uuid
     :group/users users}))
+
+(defn make-session [user-id group-id]
+  {:swig/ident    idents/session
+   :session/user  user-id
+   :session/group group-id})
+
+(defn make-player
+  [user-id type]
+  {:codenames.player/user user-id
+   :codenames.player/type type
+   :codenames.player/id (make-random-uuid)})
+
+(defn make-team
+  [teamname color players]
+  {:codenames.team/id (make-random-uuid)
+   :codenames.team/name teamname
+   :codenames.team/color color
+   :codenames.team/players players})
+
+(defn make-game
+  ([]
+   (make-game [(make-team "Blue Team" :blue [])
+               (make-team "Red Team" :red [])]))
+  ([teams]
+   (into [{:game/finished? false
+           :game/teams     teams
+           :game/id        (make-random-uuid)
+           :db/id          -1}
+          {:swig/ident   idents/session
+           :session/game -1}]
+         (make-game-pieces -1 db/words db/board-dimensions))))
 
 (comment
   (make-game db/words db/board-dimensions)

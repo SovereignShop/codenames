@@ -9,7 +9,7 @@
   [:find ?group-id .
    :in $
    :where
-   [?id :codenames.app-state/group ?group-id]])
+   [?id :group/id ?group-id]])
 
 (def-sub ::current-game
   [:find ?current-game-id .

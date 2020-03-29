@@ -1,4 +1,4 @@
-(ns codenames.subs.users
+(ns ^:figwheel-always codenames.subs.users
   (:require
    [datascript.core :as d]
    [codenames.db :as db]
@@ -9,6 +9,14 @@
   [:find (pull ?user [:user/alias
                       :user/id
                       :user/name])
-   :in $ ?group-id
+   :in $ ?gid
    :where
-   [?group-id :group/users ?user]])
+   [?gid :group/users ?user]])
+
+(def-sub ::get-user
+  [:find (pull ?uid [:user/alias
+                     :user/id
+                     :user/name]) .
+   :in $ ?uid
+   :where
+   [?uid :user/name]])

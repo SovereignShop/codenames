@@ -7,15 +7,6 @@
    [swig.macros :refer [def-event-ds]]
    [taoensso.timbre :as timbre :refer-macros [debug info warn]]))
 
-(def-event-ds ::new-game [db _]
-  (let [teams
-        (d/q '[:find [(pull ?team [:codenames.team/color :db/id]) ...]
-               :in $
-               :where
-               [?app  :codenames.app-state/current-teams ?team]]
-             db)]
-    (make-game teams db/words db/board-dimensions)))
-
 (def-event-ds ::card-click [db [_ card]]
   (info "card" card)
   (let [player (d/entity )])

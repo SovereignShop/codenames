@@ -12,6 +12,8 @@
    [codenames.views.login]
    [codenames.views.game]
    [codenames.views.pregame]
+   [codenames.subs.users]
+   [codenames.subs.session]
    [codenames.subs.game]
    [codenames.subs.pregame]
    [codenames.subs.app-state]
@@ -34,7 +36,6 @@
                      :where
                      [?id :group/name ?groupname]]
                    db-after)]
-    (js/console.log "GROUP:" gid)
     (when-not (empty? facts)
       (cond (:tx/group-update? tx-meta) (sente/send-event! [:codenames.sente/group-facts {:gid gid
                                                                                           :datoms facts}])
