@@ -8,3 +8,4 @@
 (def player-board  ::player-board)
 (def blue-team-tab ::blue-team-tab)
 (def red-team-tab  ::red-team-tab)
+(def db            ::db)

@@ -17,41 +17,86 @@
   (def users (d/q users/users @db/conn 36))
 
   (def session (d/entity @db/conn [:swig/ident idents/session]))
+  (def game    (:session/game session))
   (def user    (:session/user session))
   (def user-id (:db/id user))
 
-  (d/q '[:find [tid ?pid]
-         :in $ ?uid
-         :where
-         [?sid :session/game ?tid]
-         [?tid :codenames.team/players ?pid]
-         [?pid :codenames.player/user ?uid]]
+
+  (def-sub ::game-over
+    (fn [[]] 
+      [(re-posh/subscribe [::cards-remaining :blue])]
+      :<- [::cards-remaining :red])
+    [:find ?
+     :in $ ?game-id
+     :wehre
+     [?]])
+
+  (let [])
+
+  (d/q '[:find ?team-id .
+        :in $ ?game-id
+        :where
+         (or (and [?game-id :game/teams ?team-id]
+                  [?team-id :codenames.team/color ?color]
+                  [?id :codenames.character-card/played? true]
+                  [?team-id :codenames.team/deck-size ?game-id])
+             (and [?id :codenames.character-card/played? true]
+                  [?id :codenames.character-card/role :assassin]
+                  [?id :codenames.piece/game ?game-id]
+                  [?game-id :game/current-team ?team-id]))]
        @db/conn
-       user-id)
+       (:db/id game))
 
-  (d/q '[:find ?tid .
-         :in $ ?color
+  (d/q '[:find [?team-id ?color]
+         :in $ ?game-id
          :where
-         [?id :session/teams ?tid]
-         [?tid :codenames.team/color ?color]]
+         (or (and [?game-id :game/teams ?team-id]
+                  [?id :codenames.character-card/role]
+                  [?team-id :codenames.team/color ?color]
+                  (or (and [?game-id :game/blue-cards-count 0]
+                           [?team-id :codenames.team/color :blue])
+                      (and [?game-id :game/red-cards-count 0]
+                           [?team-id :codenames.team/color :red])))
+             (and [?game-id :game/teams ?team-id]
+                  [?team-id :codenames.team/color ?color]
+                  [?id :codenames.character-card/played? true]
+                  [?id :codenames.character-card/role :assassin]
+                  [?id :codenames.piece/game ?game-id]
+                  (not [?game-id :game/current-team ?team-id])))]
        @db/conn
-       user-id
-       :blue)
+       (:db/id game))
 
-
-  (d/q '[:find ?tid .
-         :in $ ?color
+  (d/q '[:find [?team-id ?color]
+         :in $ ?game-id
          :where
-         [?id :session/game ?gid]
-         [?gid :game/teams ?tid]
-         [?tid :codenames.team/color ?color]]
+         [?game-id :game/teams]
+         [?id :codenames.character-card/role]
+         [?team-id :codenames.team/color]
+         [?id :codenames.character-card/played?]
+         (or (and [?game-id :game/teams ?team-id]
+                  [?id :codenames.character-card/role]
+                  [?team-id :codenames.team/color ?color]
+                  (or (and [?game-id :game/blue-cards-count 0]
+                           [?team-id :codenames.team/color :blue])
+                      (and [?game-id :game/red-cards-count 0]
+                           [?team-id :codenames.team/color :red])))
+             (and [?game-id :game/teams ?team-id]
+                  [?team-id :codenames.team/color ?color]
+                  [?id :codenames.character-card/played? true]
+                  [?id :codenames.character-card/role :assassin]
+                  [?id :codenames.piece/game ?game-id]
+                  (not [?game-id :game/current-team ?team-id])))]
        @db/conn
-       user-id
-       :red)
+       (:db/id game))
 
-  (:db/id user)
+  (d/entity @db/conn idents/session)
 
-  (def game    (:session/game session)) 
+  (d/q game/word-cards @db/conn 43)
+  (d/q game/cards-remaining @db/conn 43)
+
+  (def game    (:session/game session))
+
+
   (def teams   (:game/teams game))
 
   @db/conn

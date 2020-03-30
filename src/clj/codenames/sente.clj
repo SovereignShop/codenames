@@ -43,13 +43,11 @@
   (info "ping event"))
 
 (defn insert-facts! [username groupname datoms group-update?]
-  (info "group-update?" group-update?)
   (let [user-facts  (filter (comp db/user-attributes :a) datoms)
         group-facts (filter (comp db/group-attributes :a) datoms)
         user-conn   (facts/key->conn username facts/initial-user-facts)
         group-conn  (facts/key->conn groupname facts/initial-group-facts)]
     (when (seq user-facts)
-      (info "facts!" (vec user-facts))
       (if group-update?
         (doseq [{other-username :user/name} (queries/groupname->users @group-conn groupname)]
           (facts/insert-facts! (facts/key->conn other-username facts/initial-user-facts) user-facts)
@@ -81,19 +79,6 @@
         (info "Exiting")
         (do (client-event x)
             (recur))))))
-
-#_(defn tx-log-listener [{:keys [db-before db-after tx-data tx-meta]}]
-  (let [facts (into [] (filter (comp db/schema-keys :a)) tx-data)
-        gid   (d/q '[:find ?groupname .
-                     :in $
-                     :where
-                     [?id :group/name ?groupname]]
-                   db-after)]
-    (when-not (empty? facts)
-      (cond (:tx/group-update? tx-meta) (client-event [:codenames.sente/group-facts {:gid gid
-                                                                                     :datoms facts}])
-            :else (client-event [:codenames.sente/facts {:gid gid
-                                                         :datoms facts}])))))
 
 (timbre/set-level! :info)
 

@@ -77,8 +77,8 @@
   []
   (let [login-state    (re-posh/subscribe [::app-state/authenticated?])
         show?          (reagent.ratom/reaction (not= @login-state :authenticated))
-        form-data      (reagent/atom {:username "Sam"
-                                      :groupname "Adams"
+        form-data      (reagent/atom {:username "Nicole"
+                                      :groupname "testing"
                                       :password "abc123"
                                       :remember-me true})
         save-form-data (reagent/atom nil)

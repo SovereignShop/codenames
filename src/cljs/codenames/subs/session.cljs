@@ -16,6 +16,6 @@
    [?id :session/group ?group]])
 
 (def-sub ::game
-  [:find ?game
+  [:find ?game .
    :where
    [?id :session/game ?game]])

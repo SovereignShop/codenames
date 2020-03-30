@@ -2,7 +2,8 @@
   (:require
    [codenames.constants.ui-idents :as idents]
    [codenames.db :as db]
-   [clojure.string :as string])
+   [clojure.string :as string]
+   [taoensso.timbre :as timbre :refer [debug info warn error]])
   #?(:clj (:import [java.util UUID])))
 
 (defn make-random-uuid
@@ -31,30 +32,40 @@
                                (repeatedly 12 f)))]
       #?(:cljs (UUID. s nil) :clj (UUID/fromString s)))))
 
-(defn make-board-cards [word-bank [n-rows n-cols]]
-  (let [words (->> (shuffle word-bank)
-                   (partition n-cols)
-                   (take n-rows)
-                   (mapv vec))]
-    (for [row (range n-rows)
-          col (range n-cols)]
-      {:codenames.word-card/position [row col]
-       :codenames.word-card/word     (get-in words [row col])})))
+(defn make-board-cards [game-id word-bank character-cards [n-rows n-cols]]
+  (let [words     (shuffle (take (* n-rows n-cols) word-bank))
+        positions (for [row (range n-rows)
+                        col (range n-cols)]
+                    [row col])
+        cards     (shuffle character-cards)]
+    (for [[card word [row col]] (map vector cards words positions)]
+      {:codenames.word-card/position       [row col]
+       :codenames.word-card/character-card card
+       :codenames.word-card/word           word})))
 
-(defn make-investigator-cards [color n]
-  (repeat n {:codenames.character-card/color color
+(defn make-investigator-cards [role n]
+  (repeat n {:codenames.character-card/role role
              :codenames.character-card/played? false}))
 
 (defn make-game-pieces [game-id word-bank board-dimensions]
-  (let [first-player   (nth [:red :blue] (rand-int 2))
-        board-cards    (make-board-cards word-bank board-dimensions)
-        red-cards      (make-investigator-cards :red (case first-player :red 9 8))
-        blue-cards     (make-investigator-cards :blue (case first-player :blue 9 8))
-        neutral-cards  (make-investigator-cards :neutral 7)
-        assasin-cards  (make-investigator-cards :assassin 1)]
-    (into []
+  (let [first-player    (nth [:red :blue] (rand-int 2))
+        red-cards       (make-investigator-cards :red (case first-player :red 9 8))
+        blue-cards      (make-investigator-cards :blue (case first-player :blue 9 8))
+        neutral-cards   (make-investigator-cards :neutral 7)
+        assasin-cards   (make-investigator-cards :assassin 1)
+        character-cards (into []
+                              (comp cat (map #(assoc % :codenames.piece/game game-id)))
+                              [red-cards blue-cards neutral-cards assasin-cards])
+        board-cards     (make-board-cards game-id word-bank character-cards board-dimensions)]
+    (into [{:game/blue-cards-count (count blue-cards)
+            :game/red-cards-count (count red-cards)
+            :db/id game-id}]
           (comp cat (map #(assoc % :codenames.piece/game game-id)))
-          [board-cards red-cards blue-cards neutral-cards assasin-cards])))
+          [board-cards])))
+(comment 
+  (make-game-pieces -1 db/words db/board-dimensions)
+
+  )
 
 (defn make-user
   ([username]

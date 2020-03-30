@@ -97,10 +97,9 @@
                                        (assoc (or group (utils/make-group groupname))
                                               :db/id group-id
                                               :group/users [user-id])])
-        _                  (d/transact! user-conn [(or session
-                                                       (utils/make-session
-                                                        (or (:db/id user) (tempids user-id))
-                                                        (or (:db/id group) (tempids group-id))))])
+        _                  (d/transact! user-conn [(utils/make-session
+                                                    (or (:db/id user) (tempids user-id))
+                                                    (or (:db/id group) (tempids group-id)))])
         facts-str          (facts/write-facts-str
                             (concat (d/datoms @user-conn :eavt)
                                     (d/datoms @group-conn :eavt)))]

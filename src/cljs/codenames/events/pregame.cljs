@@ -10,11 +10,12 @@
    [swig.macros :refer [def-event-ds]]
    [taoensso.timbre :refer-macros [debug info warn error]]))
 
-(def-event-ds ::enter-game [db _]
+(def-event-ds ::enter-game [db [_ game-id]]
   (with-meta
     (into [[:db.fn/retractAttribute [:swig/ident tabs/pregame] :swig.ref/parent]
            [:db/add [:swig/ident :swig/main-view] :swig.view/active-tab [:swig/ident tabs/game]]
-           [:db/add [:swig/ident tabs/game] :swig.ref/parent [:swig/ident :swig/main-view]]])
+           [:db/add [:swig/ident tabs/game] :swig.ref/parent [:swig/ident :swig/main-view]]
+           [:db/add [:swig/ident idents/session] :session/game game-id]])
     {:tx/group-update? true}))
 
 (def-event-ds ::enter-pregame [db _]
@@ -27,16 +28,17 @@
 (def-event-ds ::new-game [db _]
   (let [session (d/entity db [:swig/ident idents/session])
         user    (:session/user session)
-        game    (:session/game session)
-        teams   (:game/teams game)]
-    (into [{:game/finished? false
-            :game/teams     (or (seq (map :db/id teams))
-                                [(utils/make-team "Blue Team"
-                                                  :blue
-                                                  [(utils/make-player (:db/id user) :spymaster)])
-                                 (utils/make-team "Red Team" :red [])])
-            :game/id        (utils/make-random-uuid)
-            :db/id          -1}
+        teams   [(assoc (utils/make-team "Blue Team"
+                                         :blue
+                                         [(utils/make-player (:db/id user) :codemaster)])
+                        :db/id -2)
+                 (assoc (utils/make-team "Red Team" :red [])
+                        :db/id -3)]]
+    (into [{:game/finished?    false
+            :game/current-team (-> teams shuffle first :db/id)
+            :game/teams        teams
+            :game/id           (utils/make-random-uuid)
+            :db/id             -1}
            {:swig/ident   idents/session
             :session/game -1}]
           (utils/make-game-pieces -1 db/words db/board-dimensions))))
@@ -50,7 +52,7 @@
         user    (:session/user session)
         user-id (:db/id user)
         [tid pid]
-        (d/q '[:find [tid ?pid]
+        (d/q '[:find [?tid ?pid]
                :in $ ?uid ?gid
                :where
                [?gid :game/teams ?tid]
@@ -68,23 +70,36 @@
              db
              game-id
              color)]
-    (if (and tid pid)
+    (if (and tid pid team-id (not= tid team-id))
       [[:db/retract tid :codenames.team/players pid]
        [:db/add team-id :codenames.team/players pid]]
-      (if team-id
-        [[:db/add team-id :codenames.team/players (utils/make-player user-id :guesser)]]
-        (do (error "No team-id")
+      (if (and team-id (not= tid team-id))
+        [(assoc (utils/make-player user-id :guesser) :db/id -1)
+         [:db/add team-id :codenames.team/players -1]]
+        (do (info "No update")
             [])))))
 
+(comment
+  (join-team @db/conn [::join-team :red 40])
+  (def session (d/entity @db/conn [:swig/ident idents/session]))
+  (def user (:session/user session))
+  (def user-id (:db/id user))
+  (def game-id 40)
+
+
+  )
+
 (def-event-ds ::choose-player-type [db [_ player-type]]
-  (let [session (d/entity db idents/session)
+  (let [session (d/entity db [:swig/ident idents/session])
         player  (d/q '[:find ?pid .
                        :in $ ?uid
                        :where
                        [?pid :codenames.player/user ?uid]]
                      db
-                     (:session/user session))]
+                     (:db/id (:session/user session)))]
+    (js/console.log "WTF" (:session/user session))
     [[:db/add player :codenames.player/type player-type]]))
+
 
 (def-event-ds ::randomize-teams [db _]
   (let [session (d/entity db idents/session)

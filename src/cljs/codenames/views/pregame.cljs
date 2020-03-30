@@ -10,7 +10,8 @@
    [codenames.events.pregame :as pregame-events]
    [swig.views :as swig-view]
    [re-com.core :refer [h-box v-box button line box scroller gap]]
-   [re-posh.core :as re-posh]))
+   [re-posh.core :as re-posh]
+   [goog.string :as gstr]))
 
 (defn show-player [player]
   (let [player-type (:codenames.player/type player)
@@ -25,26 +26,42 @@
       [box :child (str player-type)]]]))
 
 (defn show-players [color game-id]
-  (let [players @(re-posh/subscribe [::pregame-subs/players color game-id])]
+  (let [players     @(re-posh/subscribe [::pregame-subs/players color game-id])
+        uid         @(re-posh/subscribe [::session-subs/user])
+        uid->player (group-by (comp :db/id :codenames.player/user) players)]
     [v-box
      :children
-     [[button
-       :label "Join Blue Team"
-       :on-click #(re-posh/dispatch [::pregame-events/join-team color game-id])]
+     [[h-box
+       :gap "5px"
+       :children
+       [[button
+         :label (gstr/format "Join %s Team" (case color :red "Red" "Blue"))
+         :on-click #(re-posh/dispatch [::pregame-events/join-team color game-id])]
+        (when-let [player (first (uid->player uid))]
+          (if (= (:codenames.player/type player) :codemaster)
+            [button
+             :label "Guesser"
+             :on-click #(re-posh/dispatch [::pregame-events/choose-player-type :guesser ])]
+            [button
+             :label (gstr/format "Code Master")
+             :on-click #(re-posh/dispatch [::pregame-events/choose-player-type :codemaster])]))]]
       [gap :size "10px"]
       [v-box
        :children
        (map show-player players)]]]))
 
-
-#_(defmethod swig-view/dispatch tabs/blue-team-tab [tab] (show-players :blue))
-#_(defmethod swig-view/dispatch tabs/red-team-tab [tab] (show-players :red))
+(defmethod swig-view/dispatch tabs/player-board
+  [tab]
+  (when-let [game-id @(re-posh/subscribe [::session-subs/game])]
+    [v-box
+     :children
+     [[show-players :blue game-id]
+      [show-players :red game-id]]]))
 
 (defn users-view []
   (let [group-id @(re-posh/subscribe [::session-subs/group])
         users    @(re-posh/subscribe [::user-subs/users group-id])]
-    [:div "wtf"]
-    #_[v-box
+    [v-box
      :children
      (for [user users]
        [h-box
@@ -73,7 +90,7 @@
          (cons [button
                 :label "Create Game"
                 :on-click #(re-posh/dispatch [::pregame-events/new-game])]
-               (for [game games]
+               (for [{game-id :db/id} games]
                  [v-box
                   :style {:flex "1 1 0%"}
                   :gap "20px"
@@ -81,8 +98,8 @@
                   [[users-view]
                    [button
                     :label "Start Game"
-                    :on-click #(re-posh/dispatch [::pregame-events/enter-game])]
+                    :on-click #(re-posh/dispatch [::pregame-events/enter-game game-id])]
                    [line :size "2px"]
-                   [show-players :blue (:db/id game)]
-                   [show-players :red (:db/id game)]
+                   [show-players :blue game-id]
+                   [show-players :red game-id]
                    #_child]])))]]]]))

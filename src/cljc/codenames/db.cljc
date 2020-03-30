@@ -131,6 +131,9 @@
 (def pregame-layout
   (swig/view {:swig/ident           :swig/main-view
               :swig.view/active-tab [:swig/ident tabs/pregame]}
+             #_(swig/tab {:swig/ident tabs/db
+                        :swig.tab/label {:swig/type :swig.type/cell
+                                         :swig.cell/element "DB"}})
              (swig/tab {:swig/ident     tabs/leader-board
                         :swig.tab/label {:swig/type         :swig.type/cell
                                          :swig.cell/element "Leader Board"}})
@@ -156,26 +159,7 @@
                                    (swig/tab {:swig/ident tabs/blue-team-tab})
                                    (swig/tab {:swig/ident tabs/red-team-tab})))))
 
-#_(def game-layout
-  (swig/view  {:swig/ident           :swig/main-view
-               :swig.view/active-tab [:swig/ident tabs/game]}
-              (swig/tab {:swig/ident     tabs/leader-board
-                         :swig.tab/label {:swig/type         :swig.type/cell
-                                          :swig.cell/element "Leader Board"}})
-              (swig/tab {:swig/ident          tabs/game
-                         :swig.tab/label      {:swig/type         :swig.type/cell
-                                               :swig.cell/element "Game"}}
-                        (swig/split {:swig/ident               splits/game-split
-                                     :swig.split/orientation   :vertical
-                                     :swig.split/split-percent 30}
-                                    (swig/split {:swig/ident               splits/game-info-split
-                                                 :swig.split/split-percent 50
-                                                 :swig.split/orientation   :horizontal}
-                                                (swig/tab {:swig/ident tabs/score-board})
-                                                (swig/tab {:swig/ident tabs/player-board}))
-                                    (swig/tab {:swig/ident tabs/game-board})))))
-
-(defonce default-db (into [] cat [game-state extras]))
+(defonce default-db (into [] cat [extras]))
 
 (def schema
   [{:db/ident :session/user :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
@@ -191,11 +175,14 @@
    {:db/ident :user/alias :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :game/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :game/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :game/current-team :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :game/blue-cards-count :db/valueType :db.type/number :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :game/red-cards-count :db/valueType :db.type/number :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :game/teams :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :prop/group true}
    {:db/ident :game/finished? :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.team/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.team/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
-   {:db/ident :codenames.team/color :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.team/color :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.team/players :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :prop/group true}
    {:db/ident :codenames.player/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.player/user :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
@@ -210,24 +197,20 @@
    {:db/ident :codenames.word-card/character-card :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.word-card/position :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.word-card/word :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
-   {:db/ident :codenames.character-card/color :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.character-card/played? :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.character-card/role :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :ui/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :popover/showing? :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :app/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one :prop/group true}])
 
 (def schema-keys
-  (into #{} (map :db/ident) full-schema))
+  (into #{} (comp cat (map :db/ident)) [schema full-schema]))
 
 (def user-attributes
   (into #{} (comp cat (remove :prop/group) (map :db/ident)) [schema full-schema]))
 
-(user-attributes :swig.tab/order)
-
 (def group-attributes
   (into #{} (comp cat (filter :prop/group) (map :db/ident)) [schema full-schema]))
-
-(group-attributes :swig.tab/order)
 
 (defn to-ds-schema [schema]
   (into {}
