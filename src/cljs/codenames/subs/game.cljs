@@ -33,7 +33,7 @@
    [?blue :codenames.piece/game ?game-id]])
 
 (def-sub ::codemaster?
-  [:find ?id .
+  [:find ?uid .
    :in $ ?game-id
    :where
    [?sid :session/user ?uid]
@@ -41,6 +41,7 @@
    [?tid :codenames.team/players ?pid]
    [?pid :codenames.player/user ?uid]
    [?pid :codenames.player/type :codemaster]])
+
 
 (def-sub ::red-cards-remaining
   [:find ?rem .

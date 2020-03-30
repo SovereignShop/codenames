@@ -19,7 +19,7 @@
            :codenames.word-card/character-card]
     :as   card}]
   (let [character-card-id (:db/id character-card)
-        codemaster?       @(re-posh/subscribe [::game-subs/codemaster?])
+        codemaster?       @(re-posh/subscribe [::game-subs/codemaster? game-id])
         card              @(re-posh/subscribe [::game-subs/character-card character-card-id])
         played?           (:codenames.character-card/played? card)
         role              (:codenames.character-card/role card)]
@@ -28,7 +28,7 @@
      :style {:width            "200px"
              :height           "70px"
              :text-align       "center"
-             :background-color (case (or codemaster? played?) role
+             :background-color (case (and (or codemaster? played?) role)
                                  :neutral  "tan"
                                  :blue     "blue"
                                  :red      "red"

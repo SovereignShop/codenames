@@ -22,8 +22,8 @@
     [h-box
      :gap "20px"
      :children
-     [[box :child (str username)]
-      [box :child (str player-type)]]]))
+     [[box :style {:color "black"} :child (str username)]
+      [box :style {:color "black"} :child (str player-type)]]]))
 
 (defn show-players [color game-id]
   (let [players     @(re-posh/subscribe [::pregame-subs/players color game-id])
@@ -35,6 +35,7 @@
        :gap "5px"
        :children
        [[button
+         :style {:color (case color :blue "blue" "red")}
          :label (gstr/format "Join %s Team" (case color :red "Red" "Blue"))
          :on-click #(re-posh/dispatch [::pregame-events/join-team color game-id])]
         (when-let [player (first (uid->player uid))]
