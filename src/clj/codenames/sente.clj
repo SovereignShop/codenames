@@ -41,9 +41,6 @@
     (def ^{:dynamic true} *connected-uids*                connected-uids) ; Watchable, read-only atom
     ))
 
-(defonce gid->uids (atom {}))
-(defonce uid->gid (atom {}))
-
 (def ^:dynamic *current-uid* nil)
 
 (defmulti client-event (comp first :event))
@@ -51,20 +48,6 @@
 (defmethod client-event :default
   [{:keys [event]}]
   (warn "Unknown client event: " (first event)))
-
-(:user/last-seen (d/entity @(facts/key->conn "testing" facts/initial-user-facts) [:user/name "Nicole"]))
-
-(d/transact! (facts/key->conn "testing" facts/initial-user-facts)
-             [[:db/add [:user/name "Nicole"] :user/last-seen (java.util.Date.)]])
-
-
-(comment
-  (def username "Nicole")
-  (def conn (facts/key->conn username facts/initial-user-facts))
-
-  (keys (d/entity @conn [:swig/ident idents/session]))
-
-  (def user (facts/key->conn )))
 
 (defn insert-facts! [username groupname datoms group-update?]
   (let [user-facts  (filter (comp db/user-attributes :a) datoms)
