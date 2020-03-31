@@ -131,9 +131,12 @@
 (def pregame-layout
   (swig/view {:swig/ident           :swig/main-view
               :swig.view/active-tab [:swig/ident tabs/pregame]}
-             #_(swig/tab {:swig/ident tabs/db
-                        :swig.tab/label {:swig/type :swig.type/cell
-                                         :swig.cell/element "DB"}})
+             #_(swig/tab {:swig/ident   tabs/db
+                          :swig.tab/label {:swig/type         :swig.type/cell
+                                           :swig.cell/element "DB"}})
+             (swig/tab {:swig/ident tabs/users
+                        :swig.tab/label {:swig/type         :swig.type/cell
+                                         :swig.cell/element "Users"}})
              (swig/tab {:swig/ident     tabs/leader-board
                         :swig.tab/label {:swig/type         :swig.type/cell
                                          :swig.cell/element "Leader Board"}})
@@ -162,17 +165,19 @@
 (defonce default-db (into [] cat [extras]))
 
 (def schema
-  [{:db/ident :session/user :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
-   {:db/ident :session/group :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
-   {:db/ident :session/game :db/valueType :db.type/ref :db/cardinality :db.cardinality/one}
+  [{:db/ident :session/user :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group false}
+   {:db/ident :session/group :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group false}
+   {:db/ident :session/groupname :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group false}
+   {:db/ident :session/game :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group false}
    {:db/ident :turn/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :turn/game :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :group/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true :db/unique :db.unique/identity}
-   {:db/ident :group/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :group/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true :db/unique :db.unique/identity}
    {:db/ident :group/users :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :prop/group true}
    {:db/ident :user/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true :db/unique :db.unique/identity}
-   {:db/ident :user/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :user/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true :db/unique :db.unique/identity}
    {:db/ident :user/alias :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :user/last-seen :db/valueType :db.type/instant :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :game/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :game/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :game/current-team :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}

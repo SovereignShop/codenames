@@ -87,10 +87,11 @@
     :group/id uuid
     :group/users users}))
 
-(defn make-session [user-id group-id]
-  {:swig/ident    idents/session
-   :session/user  user-id
-   :session/group group-id})
+(defn make-session [user-id group-id groupname]
+  {:swig/ident         idents/session
+   :session/user       user-id
+   :session/group      group-id
+   :session/groupname groupname})
 
 (defn make-player
   [user-id type]

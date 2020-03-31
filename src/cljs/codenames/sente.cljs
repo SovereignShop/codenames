@@ -23,7 +23,7 @@
 
 (defmethod server-event ::facts
   [[_ facts]]
-  (re-posh/dispatch [:codenames.events.facts/add-facts facts]))
+  (re-posh/dispatch [:codenames.events.facts/add-facts facts true]))
 
 (defmethod server-event :codenames.sente/started-processing
   [_]

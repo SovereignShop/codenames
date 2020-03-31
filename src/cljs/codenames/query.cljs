@@ -120,7 +120,7 @@
                                    [:db/retractEntity [:swig/ident idents/modal-dialog]]]
                                   (dt/read-transit-str (.getResponseText resp)))]
                  (info "Login succeeded: " datoms)
-                 (re-posh/dispatch [:codenames.events.facts/add-facts datoms])))
+                 (re-posh/dispatch [:codenames.events.facts/add-facts datoms true])))
     :error (fn [resp]
              (re-posh/dispatch [:codenames.events.app-state/login-fail])
              (warn "Login failed"))}))

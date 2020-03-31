@@ -8,7 +8,8 @@
 (def-sub ::users
   [:find (pull ?user [:user/alias
                       :user/id
-                      :user/name])
+                      :user/name
+                      :user/last-seen])
    :in $ ?gid
    :where
    [?gid :group/users ?user]])

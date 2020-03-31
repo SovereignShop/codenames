@@ -90,7 +90,8 @@
         group              (queries/get-group @group-conn groupname)
         group-id           (or (:db/id group) -2)
         user-id            (or (:db/id user) -1)
-        {:keys [tempids]} (transact! group-conn
+        {:keys [tempids
+                db-after]} (transact! group-conn
                                       username
                                       groupname
                                       [(assoc (or user (utils/make-user username)) :db/id user-id)
@@ -99,7 +100,8 @@
                                               :group/users [user-id])])
         _                  (d/transact! user-conn [(utils/make-session
                                                     (or (:db/id user) (tempids user-id))
-                                                    (or (:db/id group) (tempids group-id)))])
+                                                    (or (:db/id group) (tempids group-id))
+                                                    groupname)])
         facts-str          (facts/write-facts-str
                             (concat (d/datoms @user-conn :eavt)
                                     (d/datoms @group-conn :eavt)))]

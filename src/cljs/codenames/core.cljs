@@ -9,6 +9,7 @@
    [codenames.events.game]
    [codenames.events.pregame]
    [codenames.events.server]
+   [codenames.views.users]
    [codenames.views.login]
    [codenames.views.game]
    [codenames.views.pregame]
@@ -32,17 +33,18 @@
 (defonce _ (re-posh/connect! db/conn))
 
 (defn tx-log-listener [{:keys [db-before db-after tx-data tx-meta]}]
-  (let [facts (into [] (filter (comp db/schema-keys :a)) tx-data)
-        gid   (d/q '[:find ?groupname .
-                     :in $
-                     :where
-                     [?id :group/name ?groupname]]
-                   db-after)]
-    (when-not (empty? facts)
-      (cond (:tx/group-update? tx-meta) (sente/send-event! [:codenames.sente/group-facts {:gid gid
-                                                                                          :datoms facts}])
-            :else (sente/send-event! [:codenames.sente/facts {:gid gid
-                                                              :datoms facts}])))))
+  (when-not (:db.transaction/no-save tx-meta)
+    (let [facts (into [] (filter (comp db/schema-keys :a)) tx-data)
+          gid   (d/q '[:find ?groupname .
+                       :in $
+                       :where
+                       [?id :group/name ?groupname]]
+                     db-after)]
+      (when-not (empty? facts)
+        (cond (:tx/group-update? tx-meta) (sente/send-event! [:codenames.sente/group-facts {:gid gid
+                                                                                            :datoms facts}])
+              :else (sente/send-event! [:codenames.sente/facts
+                                        {:gid gid :datoms facts}]))))))
 
 (defonce init-db
   (do (swig/init db/login-layout)

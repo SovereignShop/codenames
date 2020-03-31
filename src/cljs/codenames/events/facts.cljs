@@ -10,11 +10,11 @@
 
 (re-posh/reg-event-ds
  ::add-facts
- (fn [_ [_ facts save?]]
+ (fn [_ [_ facts dont-save?]]
    (debug :add-facts :facts/count (count facts))
-   (if save?
-     (with-meta facts {:db.transaction/save true})
-     facts)))
+   (if dont-save?
+     (with-meta facts {:db.transaction/no-save true})
+     (with-meta facts {:db.transaction/no-save false}))))
 
 (re-frame/reg-fx
  ::save-datoms

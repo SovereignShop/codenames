@@ -88,18 +88,18 @@
 
 
   )
-
-(def-event-ds ::choose-player-type [db [_ player-type]]
+(def-event-ds ::choose-player-type [db [_ game-id player-type]]
   (let [session (d/entity db [:swig/ident idents/session])
         player  (d/q '[:find ?pid .
-                       :in $ ?uid
+                       :in $ ?uid ?gid
                        :where
+                       [?gid :game/teams ?tid]
+                       [?tid :codenames.team/players ?pid]
                        [?pid :codenames.player/user ?uid]]
                      db
-                     (:db/id (:session/user session)))]
-    (js/console.log "WTF" (:session/user session))
+                     (:db/id (:session/user session))
+                     game-id)]
     [[:db/add player :codenames.player/type player-type]]))
-
 
 (def-event-ds ::randomize-teams [db _]
   (let [session (d/entity db idents/session)

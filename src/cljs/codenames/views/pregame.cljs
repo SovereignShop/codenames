@@ -11,7 +11,8 @@
    [swig.views :as swig-view]
    [re-com.core :refer [h-box v-box button line box scroller gap]]
    [re-posh.core :as re-posh]
-   [goog.string :as gstr]))
+   [goog.string :as gstr]
+   [taoensso.timbre :refer-macros [debug info warn error]]))
 
 (defn show-player [player]
   (let [player-type (:codenames.player/type player)
@@ -28,7 +29,7 @@
 (defn show-players [color game-id]
   (let [players     @(re-posh/subscribe [::pregame-subs/players color game-id])
         uid         @(re-posh/subscribe [::session-subs/user])
-        uid->player (group-by (comp :db/id :codenames.player/user) players)]
+        uid->player (into {} (map (juxt (comp :db/id :codenames.player/user) identity)) players)]
     [v-box
      :children
      [[h-box
@@ -38,14 +39,14 @@
          :style {:color (case color :blue "blue" "red")}
          :label (gstr/format "Join %s Team" (case color :red "Red" "Blue"))
          :on-click #(re-posh/dispatch [::pregame-events/join-team color game-id])]
-        (when-let [player (first (uid->player uid))]
+        (when-let [player (uid->player uid)]
           (if (= (:codenames.player/type player) :codemaster)
             [button
              :label "Guesser"
-             :on-click #(re-posh/dispatch [::pregame-events/choose-player-type :guesser ])]
+             :on-click #(re-posh/dispatch [::pregame-events/choose-player-type game-id :guesser])]
             [button
              :label (gstr/format "Code Master")
-             :on-click #(re-posh/dispatch [::pregame-events/choose-player-type :codemaster])]))]]
+             :on-click #(re-posh/dispatch [::pregame-events/choose-player-type game-id :codemaster])]))]]
       [gap :size "10px"]
       [v-box
        :children
@@ -59,18 +60,6 @@
      [[show-players :blue game-id]
       [show-players :red game-id]]]))
 
-(defn users-view []
-  (let [group-id @(re-posh/subscribe [::session-subs/group])
-        users    @(re-posh/subscribe [::user-subs/users group-id])]
-    [v-box
-     :children
-     (for [user users]
-       [h-box
-        :gap "10px"
-        :children
-        [[box :child (str group-id)]
-         [box :child (str (:user/alias user))]]])]))
-
 (defmethod swig-view/dispatch splits/team-selection-split
   [split child]
   (let [games @(re-posh/subscribe [::pregame-subs/open-games])
@@ -79,11 +68,10 @@
      :style {:flex "1 1 0%"}
      :child
      [h-box
-      :style {:flex "1 1 0%"}
+      :width "100%"
       :children
-      [[:div {:style {:width "500px" :height "100%"}} "Chat Box"]
-       [v-box
-        :style {:flex "1 1 0%"}
+      [[v-box
+        :width "100%"
         :gap "20px"
         :children
         (interpose
@@ -93,14 +81,11 @@
                 :on-click #(re-posh/dispatch [::pregame-events/new-game])]
                (for [{game-id :db/id} games]
                  [v-box
-                  :style {:flex "1 1 0%"}
                   :gap "20px"
                   :children
-                  [[users-view]
-                   [button
-                    :label "Start Game"
+                  [[button
+                    :label "Enter Game"
                     :on-click #(re-posh/dispatch [::pregame-events/enter-game game-id])]
-                   [line :size "2px"]
                    [show-players :blue game-id]
                    [show-players :red game-id]
                    #_child]])))]]]]))

@@ -2,6 +2,7 @@
 
 (def pregame       ::pre-game)
 (def leader-board  ::leader-board)
+(def users         ::users)
 (def game          ::game)
 (def game-board    ::game-board)
 (def score-board   ::score-board)
