@@ -10,7 +10,7 @@
    [codenames.db :as db]
    [swig.views :as swig-view]
    [re-posh.core :as re-posh]
-   [re-com.core :as com :refer [h-box v-box box button gap]]))
+   [re-com.core :as com :refer [h-box v-box box button gap scroller]]))
 
 (defn display-card
   [game-id
@@ -25,9 +25,9 @@
         role              (:codenames.character-card/role card)]
     [box
      :attr  {:on-click #(re-posh/dispatch [::game-events/card-click game-id character-card-id])}
-     :style {:width            "200px"
-             :height           "70px"
-             :text-align       "center"
+     :style {:text-align       "center"
+             :border           "1px solid orange"
+             :padding "10px"
              :background-color (case (and (or codemaster? played?) role)
                                  :neutral  "tan"
                                  :blue     "blue"
@@ -52,6 +52,7 @@
         team-color        (:codenames.team/color current-team)
         [_ winning-color] @(re-posh/subscribe [::game-subs/game-over game-id])]
     [h-box
+     :class "center"
      :gap "20px"
      :children
      [[button
@@ -59,10 +60,11 @@
        :label "New Round"]
       [button
        :on-click #(re-posh/dispatch [::pregame-events/enter-pregame])
-       :label "New Game"]
+       :label "Exit Game"]
       [button
        :label "End Turn"
        :on-click #(re-posh/dispatch [::game-events/end-turn game-id])]
+      [game-score game-id]
       (case team-color
         :blue [com/p {:style {:color "Blue"}} "Blue Team's Turn"]
         :red  [com/p {:style {:color "Red"}} "Red Team's Turn"]
@@ -76,22 +78,26 @@
   (let [cards (->> cards
                    (sort-by :codenames.word-card/position)
                    (partition (first db/board-dimensions)))]
-    [:div {}
-     [game-score game-id]
-     (for [row cards]
-       [h-box
-        :children
-        (for [card row]
-          [display-card game-id card])])]))
+    [:div #_{:class "center"}
+     [:table.center
+      [:tbody
+       (for [row cards]
+         [:tr
+          (for [card row]
+            [:td [display-card game-id card]])])]]]))
 
 (defmethod swig-view/dispatch tabs/game-board
   [tab]
   (when-let [game-id @(re-posh/subscribe [::session-subs/game])]
     (let [cards @(re-posh/subscribe [::game-subs/word-cards game-id])]
       [v-box
+       :width "100%"
        :children
        [[board-info game-id cards]
-        [board-grid game-id cards]]])))
+        [scroller
+         :style {:flex "1 1 0%"}
+         :child
+         [board-grid game-id cards]]]])))
 
 (defmethod swig-view/dispatch tabs/leader-board
   [tab]

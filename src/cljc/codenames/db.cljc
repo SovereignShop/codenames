@@ -116,42 +116,48 @@
 
 (def extras
   [{:swig/ident              idents/fullscreen-view
-    :fullscreen-view/view-id views/main-view}
+    :fullscreen-view/view-id views/root-view}
    {:swig/ident       :user-login
     :app/type         :type/user-login
     :user-login/state :unauthenticated}
    {:swig/ident idents/server-events}
-   {:swig/ident  idents/app-state}])
+   {:swig/ident idents/app-state}])
 
 (def login-layout
-  (swig/view {:swig/ident :swig/main-view}
+  (swig/view {:swig/ident :swig/root-view}
              (swig/window {:swig/ident idents/login-window})
              (swig/window {:swig/ident idents/modal-dialog})))
 
 (def pregame-layout
-  (swig/view {:swig/ident           :swig/main-view
+  (swig/view {:swig/ident           :swig/root-view
               :swig.view/active-tab [:swig/ident tabs/pregame]}
-             #_(swig/tab {:swig/ident   tabs/db
+             #_(swig/tab {:swig/ident     tabs/db
                           :swig.tab/label {:swig/type         :swig.type/cell
                                            :swig.cell/element "DB"}})
-             (swig/tab {:swig/ident tabs/users
+             (swig/tab {:swig/ident     tabs/users
                         :swig.tab/label {:swig/type         :swig.type/cell
                                          :swig.cell/element "Users"}})
              (swig/tab {:swig/ident     tabs/leader-board
                         :swig.tab/label {:swig/type         :swig.type/cell
-                                         :swig.cell/element "Leader Board"}})
+                                         :swig.cell/element "Leader Board"}
+                        :swig.tab/ops   [{:swig/type           :swig.type/operation
+                                          :swig.operation/name :operation/fullscreen}]})
              (swig/tab {:swig/ident     tabs/game
                         :swig.tab/label {:swig/type         :swig.type/cell
-                                         :swig.cell/element "Game"}}
+                                         :swig.cell/element "Game"}
+                        :swig.tab/ops   [{:swig/type           :swig.type/operation
+                                          :swig.operation/name :operation/fullscreen}]}
                        (swig/split {:swig/ident               splits/game-split
                                     :swig.split/orientation   :vertical
                                     :swig.split/split-percent 30}
                                    (swig/split {:swig/ident               splits/game-info-split
                                                 :swig.split/split-percent 50
-                                                :swig.split/orientation   :horizontal}
-                                               (swig/tab {:swig/ident tabs/score-board})
-                                               (swig/tab {:swig/ident tabs/player-board}))
-                                   (swig/tab {:swig/ident tabs/game-board})))
+                                                :swig.split/orientation   :horizontal} 
+                                               (swig/tab {:swig/ident   tabs/score-board})
+                                               (swig/tab {:swig/ident   tabs/player-board}))
+                                   (swig/tab {:swig/ident     tabs/game-board
+                                              :swig.tab/ops   [{:swig/type           :swig.type/operation
+                                                                :swig.operation/name :operation/fullscreen}]})))
              (swig/tab {:swig/ident     tabs/pregame
                         :swig.tab/label {:swig/type         :swig.type/cell
                                          :swig.cell/element "Pregame"}}
@@ -192,11 +198,6 @@
    {:db/ident :codenames.player/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.player/user :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.player/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one :prop/group true}
-   {:db/ident :codenames.app-state/current-teams :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :prop/group true}
-   {:db/ident :codenames.app-state/group :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
-   {:db/ident :codenames.game-state/current-team :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
-   {:db/ident :codenames.player-state/team :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
-   {:db/ident :codenames.player-state/player :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.piece/game :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.piece/type :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.word-card/character-card :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}

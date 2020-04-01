@@ -54,7 +54,6 @@
         group-facts (filter (comp db/group-attributes :a) datoms)
         user-conn   (facts/key->conn username facts/initial-user-facts)
         group-conn  (facts/key->conn groupname facts/initial-group-facts)]
-    (info (vec user-facts))
     (when (seq user-facts)
       (facts/insert-facts! user-conn user-facts)
       (if group-update?

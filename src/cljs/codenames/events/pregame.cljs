@@ -13,16 +13,16 @@
 (def-event-ds ::enter-game [db [_ game-id]]
   (with-meta
     (into [[:db.fn/retractAttribute [:swig/ident tabs/pregame] :swig.ref/parent]
-           [:db/add [:swig/ident :swig/main-view] :swig.view/active-tab [:swig/ident tabs/game]]
-           [:db/add [:swig/ident tabs/game] :swig.ref/parent [:swig/ident :swig/main-view]]
+           [:db/add [:swig/ident :swig/root-view] :swig.view/active-tab [:swig/ident tabs/game]]
+           [:db/add [:swig/ident tabs/game] :swig.ref/parent [:swig/ident :swig/root-view]]
            [:db/add [:swig/ident idents/session] :session/game game-id]])
     {:tx/group-update? true}))
 
 (def-event-ds ::enter-pregame [db _]
   (with-meta
     (into [[:db.fn/retractAttribute [:swig/ident tabs/game] :swig.ref/parent]
-           [:db/add [:swig/ident :swig/main-view] :swig.view/active-tab [:swig/ident tabs/pregame]]
-           [:db/add [:swig/ident tabs/pregame] :swig.ref/parent [:swig/ident :swig/main-view]]])
+           [:db/add [:swig/ident :swig/root-view] :swig.view/active-tab [:swig/ident tabs/pregame]]
+           [:db/add [:swig/ident tabs/pregame] :swig.ref/parent [:swig/ident :swig/root-view]]])
     {:tx/group-update? true}))
 
 (def-event-ds ::new-game [db _]

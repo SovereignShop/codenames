@@ -71,9 +71,9 @@
 (defn ^:export init []
   (dev-setup)
   (d/listen! db/conn ::tx-log-listener #'tx-log-listener)
-  (swig/render [:swig/ident :swig/main-view]))
+  (swig/render [:swig/ident :swig/root-view]))
 
 (defonce initialization-block (init))
 
 (defn ^:after-load re-render []
-  (swig/render [:swig/ident :swig/main-view]))
+  (swig/render [:swig/ident :swig/root-view]))

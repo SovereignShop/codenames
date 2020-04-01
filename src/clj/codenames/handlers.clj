@@ -29,7 +29,8 @@
               [:link {:type "text/css" :rel "stylesheet" :href "assets/css/bootstrap.css"}]
               [:link {:type "text/css" :rel "stylesheet" :href "assets/css/material-design-iconic-font.min.css"}]
               [:link {:type "text/css" :rel "stylesheet" :href "assets/css/re-com.css"}]
-              [:link {:type "text/css" :rel "stylesheet" :href "assets/css/robo.css"}]]
+              [:link {:type "text/css" :rel "stylesheet" :href "assets/css/robo.css"}]
+              [:link {:type "text/css" :rel "stylesheet" :href "assets/css/custom-styles.css"}]]
              [:body
               [:div  {:id              "app"
                       :data-csrf-token (force anti-forgery/*anti-forgery-token*)}

@@ -115,7 +115,7 @@
     :params credentials
     :success (fn [resp]
                (re-posh/dispatch [:codenames.events.app-state/login-success])
-               (let [datoms (into [[:db/retractEntity [:swig/ident :swig/main-view]]
+               (let [datoms (into [[:db/retractEntity [:swig/ident :swig/root-view]]
                                    [:db/retractEntity [:swig/ident idents/modal-dialog]]
                                    [:db/retractEntity [:swig/ident idents/modal-dialog]]]
                                   (dt/read-transit-str (.getResponseText resp)))]
