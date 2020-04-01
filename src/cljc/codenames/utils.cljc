@@ -32,8 +32,8 @@
                                (repeatedly 12 f)))]
       #?(:cljs (UUID. s nil) :clj (UUID/fromString s)))))
 
-(defn make-board-cards [game-id word-bank character-cards [n-rows n-cols]]
-  (let [words     (shuffle (take (* n-rows n-cols) word-bank))
+(defn make-board-cards [word-bank character-cards [n-rows n-cols]]
+  (let [words     (take (* n-rows n-cols) (shuffle word-bank))
         positions (for [row (range n-rows)
                         col (range n-cols)]
                     [row col])
@@ -47,21 +47,24 @@
   (repeat n {:codenames.character-card/role role
              :codenames.character-card/played? false}))
 
-(defn make-game-pieces [game-id word-bank board-dimensions]
-  (let [first-player    (nth [:red :blue] (rand-int 2))
-        red-cards       (make-investigator-cards :red (case first-player :red 9 8))
-        blue-cards      (make-investigator-cards :blue (case first-player :blue 9 8))
-        neutral-cards   (make-investigator-cards :neutral 7)
-        assasin-cards   (make-investigator-cards :assassin 1)
-        character-cards (into []
-                              (comp cat (map #(assoc % :codenames.piece/game game-id)))
-                              [red-cards blue-cards neutral-cards assasin-cards])
-        board-cards     (make-board-cards game-id word-bank character-cards board-dimensions)]
-    (into [{:game/blue-cards-count (count blue-cards)
-            :game/red-cards-count (count red-cards)
-            :db/id game-id}]
-          (comp cat (map #(assoc % :codenames.piece/game game-id)))
-          [board-cards])))
+(defn make-game-pieces
+  ([round-id word-bank board-dimensions]
+   (make-game-pieces round-id word-bank board-dimensions (nth [:red :blue] (rand-int 2))))
+  ([round-id word-bank board-dimensions first-player]
+   (let [red-cards       (make-investigator-cards :red (case first-player :red 9 8))
+         blue-cards      (make-investigator-cards :blue (case first-player :blue 9 8))
+         neutral-cards   (make-investigator-cards :neutral 7)
+         assasin-cards   (make-investigator-cards :assassin 1)
+         character-cards (into []
+                               (comp cat (map #(assoc % :codenames.piece/round round-id)))
+                               [red-cards blue-cards neutral-cards assasin-cards])
+         board-cards     (make-board-cards word-bank character-cards board-dimensions)]
+     (into [{:codenames.round/blue-cards-count (count blue-cards)
+             :codenames.round/red-cards-count  (count red-cards)
+             :db/id                 round-id}]
+           (comp cat (map #(assoc % :codenames.piece/round round-id)))
+           [board-cards]))))
+
 (comment 
   (make-game-pieces -1 db/words db/board-dimensions)
 
@@ -116,8 +119,10 @@
            :game/id        (make-random-uuid)
            :db/id          -1}
           {:swig/ident   idents/session
-           :session/game -1}]
-         (make-game-pieces -1 db/words db/board-dimensions))))
+           :session/game -1}
+          {:codenames.round/number 1
+           :db/id -2}]
+         (make-game-pieces -2 db/words db/board-dimensions))))
 
 (comment
   (make-game db/words db/board-dimensions)

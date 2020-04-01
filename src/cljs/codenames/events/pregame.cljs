@@ -26,22 +26,44 @@
     {:tx/group-update? true}))
 
 (def-event-ds ::new-game [db _]
-  (let [session (d/entity db [:swig/ident idents/session])
-        user    (:session/user session)
-        teams   [(assoc (utils/make-team "Blue Team"
-                                         :blue
-                                         [(utils/make-player (:db/id user) :codemaster)])
-                        :db/id -2)
-                 (assoc (utils/make-team "Red Team" :red [])
-                        :db/id -3)]]
-    (into [{:game/finished?    false
-            :game/current-team (-> teams shuffle first :db/id)
-            :game/teams        teams
-            :game/id           (utils/make-random-uuid)
-            :db/id             -1}
+  (let [session     (d/entity db [:swig/ident idents/session])
+        user        (:session/user session)
+        teams       [(assoc (utils/make-team "Blue Team"
+                                             :blue
+                                             [(utils/make-player (:db/id user) :codemaster)])
+                            :db/id -2)
+                     (assoc (utils/make-team "Red Team" :red [])
+                            :db/id -3)]
+        first-team  (-> teams shuffle first)
+        first-color (:codenames.team/color first-team)]
+    (into [{:game/finished?     false
+            :game/current-round -4
+            :game/rounds        -4
+            :game/teams         teams
+            :game/id            (utils/make-random-uuid)
+            :db/id              -1}
            {:swig/ident   idents/session
-            :session/game -1}]
-          (utils/make-game-pieces -1 db/words db/board-dimensions))))
+            :session/game -1}
+           {:codenames.round/number 1
+            :codenames.round/current-team  (:db/id first-team)
+            :db/id                  -4}]
+          (utils/make-game-pieces -4 db/words db/board-dimensions first-color))))
+
+(def-event-ds ::new-round [db [_ game-id]]
+  (let [game         (d/entity db game-id)
+        teams        (:game/teams game)
+        first-team   (-> teams shuffle first)
+        first-color  (:codenames.team/color first-team)
+        rounds       (:game/rounds game)
+        round-number (apply max (map :codenames.round/number rounds))]
+    (info (map #(into {} %) rounds) round-number)
+    (into [{:codenames.round/number (inc round-number)
+            :codenames.round/current-team  (:db/id first-team)
+            :db/id                  -1}
+           {:db/id              game-id
+            :game/rounds        -1
+            :game/current-round -1}]
+          (utils/make-game-pieces -1 db/words db/board-dimensions first-color))))
 
 (defn retract-avs [db attr value]
   (vec (for [{:keys [e a v]} (d/datoms db :avet attr value)]
@@ -79,15 +101,6 @@
         (do (info "No update")
             [])))))
 
-(comment
-  (join-team @db/conn [::join-team :red 40])
-  (def session (d/entity @db/conn [:swig/ident idents/session]))
-  (def user (:session/user session))
-  (def user-id (:db/id user))
-  (def game-id 40)
-
-
-  )
 (def-event-ds ::choose-player-type [db [_ game-id player-type]]
   (let [session (d/entity db [:swig/ident idents/session])
         player  (d/q '[:find ?pid .

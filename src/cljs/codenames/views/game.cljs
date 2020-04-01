@@ -19,23 +19,26 @@
            :codenames.word-card/character-card]
     :as   card}]
   (let [character-card-id (:db/id character-card)
-        codemaster?       @(re-posh/subscribe [::game-subs/codemaster? game-id])
+        player-type       @(re-posh/subscribe [::game-subs/player-type game-id])
+        codemaster?       (= player-type :codemaster)
         card              @(re-posh/subscribe [::game-subs/character-card character-card-id])
         played?           (:codenames.character-card/played? card)
-        role              (:codenames.character-card/role card)]
+        role              (:codenames.character-card/role card)
+        word-color        (if (= role :assassin) "white" "black")]
     [box
      :attr  {:on-click #(re-posh/dispatch [::game-events/card-click game-id character-card-id])}
      :style {:text-align       "center"
              :border           "1px solid orange"
-             :padding "10px"
-             :background-color (case (and (or codemaster? played?) role)
-                                 :neutral  "tan"
-                                 :blue     "blue"
-                                 :red      "red"
-                                 :assassin "black"
-                                 "default")}
+             :padding          "10px"
+             :background-color (if (or codemaster? played?)
+                                 (case role
+                                   :neutral  "tan"
+                                   :blue     "blue"
+                                   :red      "red"
+                                   :assassin "black")
+                                 "white")}
      :child [:h4 {:style {:text-align :center
-                          :color "black"}} word]]))
+                          :color      (if codemaster? word-color "black")}} word]]))
 
 (defn game-score [game-id]
   (let [red-remaining @(re-posh/subscribe [::game-subs/red-cards-remaining game-id])
@@ -56,7 +59,7 @@
      :gap "20px"
      :children
      [[button
-       :on-click #(re-posh/dispatch [::game-events/new-game])
+       :on-click #(re-posh/dispatch [::pregame-events/new-round game-id])
        :label "New Round"]
       [button
        :on-click #(re-posh/dispatch [::pregame-events/enter-pregame])
@@ -66,12 +69,12 @@
        :on-click #(re-posh/dispatch [::game-events/end-turn game-id])]
       [game-score game-id]
       (case team-color
-        :blue [com/p {:style {:color "Blue"}} "Blue Team's Turn"]
-        :red  [com/p {:style {:color "Red"}} "Red Team's Turn"]
-        [com/p (str "Error.. " current-team)])
+        :blue [:div {:style {:color "Blue"}} "Blue Team's Turn"]
+        :red  [:div {:style {:color "Red"}} "Red Team's Turn"]
+        [:div (str "Error.. " current-team)])
       (case winning-color
-        :red  [com/p {:style {:color "red"}} "Red team wins!"]
-        :blue [com/p {:style {:color "blue"}} "Blue team wins!"]
+        :red  [:div {:style {:color "red"}} "Red team wins!"]
+        :blue [:div {:style {:color "blue"}} "Blue team wins!"]
         nil)]]))
 
 (defn board-grid [game-id cards]

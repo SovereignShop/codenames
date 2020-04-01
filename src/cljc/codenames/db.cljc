@@ -186,11 +186,13 @@
    {:db/ident :user/last-seen :db/valueType :db.type/instant :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :game/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :game/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
-   {:db/ident :game/current-team :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
-   {:db/ident :game/blue-cards-count :db/valueType :db.type/number :db/cardinality :db.cardinality/one :prop/group true}
-   {:db/ident :game/red-cards-count :db/valueType :db.type/number :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :game/current-round :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :game/rounds :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :prop/group true}
+   {:db/ident :codenames.round/blue-cards-count :db/valueType :db.type/number :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.round/red-cards-count :db/valueType :db.type/number :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :game/teams :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :prop/group true}
    {:db/ident :game/finished? :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :game/round :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.team/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.team/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.team/color :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one :prop/group true}
@@ -198,7 +200,12 @@
    {:db/ident :codenames.player/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.player/user :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.player/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one :prop/group true}
-   {:db/ident :codenames.piece/game :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.turn/word :db/valueType :db.type/number :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.turn/number :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.turn/player :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.round/number :db/valueType :db.type/number :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.round/current-team :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.piece/round :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.piece/type :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.word-card/character-card :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.word-card/position :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}

@@ -32,63 +32,6 @@
      [?]])
 
   (let [])
-
-  (d/q '[:find ?team-id .
-        :in $ ?game-id
-        :where
-         (or (and [?game-id :game/teams ?team-id]
-                  [?team-id :codenames.team/color ?color]
-                  [?id :codenames.character-card/played? true]
-                  [?team-id :codenames.team/deck-size ?game-id])
-             (and [?id :codenames.character-card/played? true]
-                  [?id :codenames.character-card/role :assassin]
-                  [?id :codenames.piece/game ?game-id]
-                  [?game-id :game/current-team ?team-id]))]
-       @db/conn
-       (:db/id game))
-
-  (d/q '[:find [?team-id ?color]
-         :in $ ?game-id
-         :where
-         (or (and [?game-id :game/teams ?team-id]
-                  [?id :codenames.character-card/role]
-                  [?team-id :codenames.team/color ?color]
-                  (or (and [?game-id :game/blue-cards-count 0]
-                           [?team-id :codenames.team/color :blue])
-                      (and [?game-id :game/red-cards-count 0]
-                           [?team-id :codenames.team/color :red])))
-             (and [?game-id :game/teams ?team-id]
-                  [?team-id :codenames.team/color ?color]
-                  [?id :codenames.character-card/played? true]
-                  [?id :codenames.character-card/role :assassin]
-                  [?id :codenames.piece/game ?game-id]
-                  (not [?game-id :game/current-team ?team-id])))]
-       @db/conn
-       (:db/id game))
-
-  (d/q '[:find [?team-id ?color]
-         :in $ ?game-id
-         :where
-         [?game-id :game/teams]
-         [?id :codenames.character-card/role]
-         [?team-id :codenames.team/color]
-         [?id :codenames.character-card/played?]
-         (or (and [?game-id :game/teams ?team-id]
-                  [?id :codenames.character-card/role]
-                  [?team-id :codenames.team/color ?color]
-                  (or (and [?game-id :game/blue-cards-count 0]
-                           [?team-id :codenames.team/color :blue])
-                      (and [?game-id :game/red-cards-count 0]
-                           [?team-id :codenames.team/color :red])))
-             (and [?game-id :game/teams ?team-id]
-                  [?team-id :codenames.team/color ?color]
-                  [?id :codenames.character-card/played? true]
-                  [?id :codenames.character-card/role :assassin]
-                  [?id :codenames.piece/game ?game-id]
-                  (not [?game-id :game/current-team ?team-id])))]
-       @db/conn
-       (:db/id game))
-
   (d/entity @db/conn idents/session)
 
   (d/q game/word-cards @db/conn 43)

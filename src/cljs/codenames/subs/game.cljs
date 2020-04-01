@@ -19,48 +19,53 @@
    :in $ ?game-id
    :where
    [?card :codenames.word-card/word]
-   [?card :codenames.piece/game ?game-id]])
+   [?game-id :game/current-round ?round-id]
+   [?card :codenames.piece/round ?round-id]])
 
 (def-sub ::cards-played
   [:find [(count-distinct ?red) (count-distinct ?blue)]
    :in $ ?game-id
    :where
+   [?game-id :game/current-round ?round-id]
    [?red  :codenames.character-card/role   :red]
    [?red  :codenames.character-card/played? true]
-   [?red  :codenames.piece/game ?game-id]
+   [?red  :codenames.piece/round ?round-id]
    [?blue :codenames.character-card/role   :blue]
    [?blue :codenames.character-card/played? true]
-   [?blue :codenames.piece/game ?game-id]])
+   [?blue :codenames.piece/round ?round-id]])
 
-(def-sub ::codemaster?
-  [:find ?uid .
+(def-sub ::player-type
+  [:find ?player-type .
    :in $ ?game-id
    :where
    [?sid :session/user ?uid]
    [?game-id :game/teams ?tid]
    [?tid :codenames.team/players ?pid]
    [?pid :codenames.player/user ?uid]
-   [?pid :codenames.player/type :codemaster]])
+   [?pid :codenames.player/type ?player-type]])
 
 
 (def-sub ::red-cards-remaining
   [:find ?rem .
    :in $ ?game-id
    :where
-   [?game-id :game/red-cards-count ?rem]])
+   [?game-id :game/current-round ?round-id]
+   [?round-id :codenames.round/red-cards-count ?rem]])
 
 (def-sub ::blue-cards-remaining
   [:find ?rem .
    :in $ ?game-id
    :where
-   [?game-id :game/blue-cards-count ?rem]])
+   [?game :game/current-round ?round-id]
+   [?round-id :codenames.round/blue-cards-count ?rem]])
 
 (def-sub ::current-team
   [:find (pull ?tid [:codenames.team/color
                      :codenames.team/name]) .
    :in $ ?game-id
    :where
-   [?game-id :game/current-team ?tid]])
+   [?game-id :game/current-round ?round-id]
+   [?round-id :codenames.round/current-team ?tid]])
 
 (def-pull-sub ::character-card
   [:codenames.character-card/role
@@ -76,14 +81,16 @@
    [?id :codenames.character-card/played?]
    (or (and [?game-id :game/teams ?team-id]
             [?id :codenames.character-card/role]
+            [?game-id :game/current-round ?round-id]
             [?team-id :codenames.team/color ?color]
-            (or (and [?game-id :game/blue-cards-count 0]
+            (or (and [?round-id :codenames.round/blue-cards-count 0]
                      [?team-id :codenames.team/color :blue])
-                (and [?game-id :game/red-cards-count 0]
+                (and [?round-id :codenames.round/red-cards-count 0]
                      [?team-id :codenames.team/color :red])))
        (and [?game-id :game/teams ?team-id]
+            [?game-id :game/current-round ?round-id]
             [?team-id :codenames.team/color ?color]
             [?id :codenames.character-card/played? true]
             [?id :codenames.character-card/role :assassin]
-            [?id :codenames.piece/game ?game-id]
-            (not [?game-id :game/current-team ?team-id])))])
+            [?id :codenames.piece/round ?round-id]
+            [?round-id :codenames.round/current-team ?team-id]))])
