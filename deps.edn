@@ -19,7 +19,6 @@
          thi.ng/domus                        {:mvn/version "0.2.0"}
          org.clojure/core.match              {:mvn/version "0.3.0"}
          org.clojure/spec.alpha              {:mvn/version "0.2.176"}
-         org.clojars.stumitchell/clairvoyant {:mvn/version "0.2.1"}
          io.replikativ/konserve              {:mvn/version "0.5.0"
                                               :exclusions  [org.clojure/clojurescript]}
          datascript                          {:mvn/version "0.18.4"

@@ -13,10 +13,10 @@
         round   (:game/current-round game)
         team    (:codenames.round/current-team round)
         players (:codenames.team/players team)
-        users   (into #{} (map (comp :db/id :codenames.player/user)) players)
+        users   (into {} (map (juxt (comp :db/id :codenames.player/user) :codenames.player/type)) players)
         session (d/entity db [:swig/ident idents/session])
         user    (-> session :session/user :db/id)]
-    (contains? users user)))
+    (= (users user) :guesser)))
 
 (def-event-ds ::end-turn [db [_ game-id]]
   (when (users-turn? db game-id)

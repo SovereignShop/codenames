@@ -84,7 +84,7 @@
       [game-score game-id]
       (case team-color
         :blue [:div {:style {:color "Blue" :width "125px"}} "Blue Team's Turn"]
-        :red  [:div {:style {:color "Red" :width "125px"}} "Red Tem's Turn"]
+        :red  [:div {:style {:color "Red" :width "125px"}} "Red Team's Turn"]
         [:div (str "Error.. " current-team)])
       (case winning-color
         :red  [:div {:style {:color "red"}} "Red team wins!"]
