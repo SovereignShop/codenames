@@ -94,3 +94,11 @@
             [?id :codenames.character-card/role :assassin]
             [?id :codenames.piece/round ?round-id]
             [?round-id :codenames.round/current-team ?team-id]))])
+
+(def-sub ::get-browser-src
+  [:find ?src .
+   :in $ ?id
+   :where
+   [?id :html.iframe/src ?src]])
+
+

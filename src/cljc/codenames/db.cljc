@@ -126,7 +126,9 @@
 (def login-layout
   (swig/view {:swig/ident :swig/root-view}
              (swig/window {:swig/ident idents/login-window})
-             (swig/window {:swig/ident idents/modal-dialog})))
+             (swig/window {:swig/ident idents/modal-dialog})
+             (swig/window {:swig/ident       idents/main-popover
+                           :popover/showing? false})))
 
 (def pregame-layout
   (swig/view {:swig/ident           :swig/root-view
@@ -150,14 +152,14 @@
                        (swig/split {:swig/ident               splits/game-split
                                     :swig.split/orientation   :vertical
                                     :swig.split/split-percent 30}
-                                   (swig/split {:swig/ident               splits/game-info-split
+                                   (swig/tab {:swig/ident tabs/player-board})
+                                   #_(swig/split {:swig/ident               splits/game-info-split
                                                 :swig.split/split-percent 50
-                                                :swig.split/orientation   :horizontal} 
-                                               (swig/tab {:swig/ident   tabs/score-board})
-                                               (swig/tab {:swig/ident   tabs/player-board}))
-                                   (swig/tab {:swig/ident     tabs/game-board
-                                              :swig.tab/ops   [{:swig/type           :swig.type/operation
-                                                                :swig.operation/name :operation/fullscreen}]})))
+                                                :swig.split/orientation   :horizontal}
+                                               (swig/tab {:swig/ident tabs/score-board}))
+                                   (swig/tab {:swig/ident   tabs/game-board
+                                              :swig.tab/ops [{:swig/type           :swig.type/operation
+                                                              :swig.operation/name :operation/fullscreen}]})))
              (swig/tab {:swig/ident     tabs/pregame
                         :swig.tab/label {:swig/type         :swig.type/cell
                                          :swig.cell/element "Pregame"}}
@@ -173,6 +175,7 @@
 (def schema
   [{:db/ident :session/user :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group false}
    {:db/ident :session/group :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group false}
+   {:db/ident :html.iframe/src :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :session/groupname :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group false}
    {:db/ident :session/game :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group false}
    {:db/ident :turn/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
@@ -213,7 +216,7 @@
    {:db/ident :codenames.character-card/played? :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.character-card/role :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :ui/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one :prop/group true}
-   {:db/ident :popover/showing? :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :popover/showing? :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one :prop/group false}
    {:db/ident :app/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one :prop/group true}])
 
 (def schema-keys

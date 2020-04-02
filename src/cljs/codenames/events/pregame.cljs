@@ -8,22 +8,30 @@
    [datascript.core :as d]
    [swig.parser :refer [hiccup->facts]]
    [swig.macros :refer [def-event-ds]]
+   [swig.events :refer [exit-fullscreen]]
    [taoensso.timbre :refer-macros [debug info warn error]]))
 
 (def-event-ds ::enter-game [db [_ game-id]]
-  (with-meta
-    (into [[:db.fn/retractAttribute [:swig/ident tabs/pregame] :swig.ref/parent]
-           [:db/add [:swig/ident :swig/root-view] :swig.view/active-tab [:swig/ident tabs/game]]
-           [:db/add [:swig/ident tabs/game] :swig.ref/parent [:swig/ident :swig/root-view]]
-           [:db/add [:swig/ident idents/session] :session/game game-id]])
-    {:tx/group-update? true}))
+  (into [[:db.fn/retractAttribute [:swig/ident tabs/pregame] :swig.ref/parent]
+         [:db/add [:swig/ident :swig/root-view] :swig.view/active-tab [:swig/ident tabs/game]]
+         [:db/add [:swig/ident tabs/game] :swig.ref/parent [:swig/ident :swig/root-view]]
+         [:db/add [:swig/ident idents/session] :session/game game-id]]))
 
 (def-event-ds ::enter-pregame [db _]
-  (with-meta
-    (into [[:db.fn/retractAttribute [:swig/ident tabs/game] :swig.ref/parent]
+  (let [tab (d/entity db [:swig/ident tabs/game-board])]
+    (into (if (:swig.tab/fullscreen tab)
+            (exit-fullscreen db [nil (:db/id tab)])
+            [])
+          [[:db.fn/retractAttribute [:swig/ident tabs/game] :swig.ref/parent]
            [:db/add [:swig/ident :swig/root-view] :swig.view/active-tab [:swig/ident tabs/pregame]]
-           [:db/add [:swig/ident tabs/pregame] :swig.ref/parent [:swig/ident :swig/root-view]]])
-    {:tx/group-update? true}))
+           [:db/add [:swig/ident tabs/pregame] :swig.ref/parent [:swig/ident :swig/root-view]]])))
+
+
+(comment
+  (:swig.tab/fullscreen (d/entity @db/conn [:swig/ident tabs/game-board]))
+
+  )
+
 
 (def-event-ds ::new-game [db _]
   (let [session     (d/entity db [:swig/ident idents/session])

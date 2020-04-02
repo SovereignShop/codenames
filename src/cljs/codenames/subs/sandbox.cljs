@@ -31,8 +31,7 @@
      :wehre
      [?]])
 
-  (let [])
-  (d/entity @db/conn idents/session)
+  (d/entity @db/conn [:swig/ident idents/session])
 
   (d/q game/word-cards @db/conn 43)
   (d/q game/cards-remaining @db/conn 43)

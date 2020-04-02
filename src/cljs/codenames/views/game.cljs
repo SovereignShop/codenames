@@ -3,6 +3,7 @@
    [codenames.subs.game :as game-subs]
    [codenames.subs.app-state :as app-state]
    [codenames.subs.session :as session-subs]
+   [codenames.constants.ui-idents :as idents]
    [codenames.constants.ui-tabs :as tabs]
    [codenames.constants.ui-splits :as splits]
    [codenames.events.game :as game-events]
@@ -10,7 +11,15 @@
    [codenames.db :as db]
    [swig.views :as swig-view]
    [re-posh.core :as re-posh]
-   [re-com.core :as com :refer [h-box v-box box button gap scroller]]))
+   [re-com.core :as com :refer [h-box v-box box button gap scroller input-text]]))
+
+(defn popover! [content label title]
+  (re-posh/dispatch [:codenames.events.popover/show
+                     [:swig/ident idents/main-popover]
+                     {:popover/content  content
+                      :popover/showing? true
+                      :popover/label    label
+                      :popover/title    title}]))
 
 (defn display-card
   [game-id
@@ -26,19 +35,24 @@
         role              (:codenames.character-card/role card)
         word-color        (if (= role :assassin) "white" "black")]
     [box
-     :attr  {:on-click #(re-posh/dispatch [::game-events/card-click game-id character-card-id])}
+     :attr  {:on-click #(do
+                          (re-posh/dispatch [::game-events/card-click game-id character-card-id])
+                          #_(popover! [:img {:src "https://media.giphy.com/media/TMhjbNhJOmxRm/giphy.gif"}]
+                                      "Testing"
+                                      "title"))} 
      :style {:text-align       "center"
-             :border           "1px solid orange"
-             :padding          "10px"
+             :padding          "12px"
+             :border-radius    "3px"
+             :box-shadow       (if played? "3px 3px 2px grey" "")
              :background-color (if (or codemaster? played?)
                                  (case role
-                                   :neutral  "tan"
-                                   :blue     "blue"
-                                   :red      "red"
+                                   :neutral  (if played? "#ff9933" "#ffb366")
+                                   :blue     (if played? "#0040ff" "#00bfff")
+                                   :red      (if played? "#990000" "#cc0000")
                                    :assassin "black")
                                  "white")}
      :child [:h4 {:style {:text-align :center
-                          :color      (if codemaster? word-color "black")}} word]]))
+                          :color      (if (or codemaster? played?) "white" "black")}} word]]))
 
 (defn game-score [game-id]
   (let [red-remaining @(re-posh/subscribe [::game-subs/red-cards-remaining game-id])
@@ -69,8 +83,8 @@
        :on-click #(re-posh/dispatch [::game-events/end-turn game-id])]
       [game-score game-id]
       (case team-color
-        :blue [:div {:style {:color "Blue"}} "Blue Team's Turn"]
-        :red  [:div {:style {:color "Red"}} "Red Team's Turn"]
+        :blue [:div {:style {:color "Blue" :width "125px"}} "Blue Team's Turn"]
+        :red  [:div {:style {:color "Red" :width "125px"}} "Red Tem's Turn"]
         [:div (str "Error.. " current-team)])
       (case winning-color
         :red  [:div {:style {:color "red"}} "Red team wins!"]
@@ -82,7 +96,8 @@
                    (sort-by :codenames.word-card/position)
                    (partition (first db/board-dimensions)))]
     [:div #_{:class "center"}
-     [:table.center
+     [:table.center {:style {:border-spacing  "10px"
+                             :border-collapse "separate"}}
       [:tbody
        (for [row cards]
          [:tr
@@ -108,4 +123,24 @@
 
 (defmethod swig-view/dispatch tabs/score-board
   [tab]
-  [:div "Score Board"])
+  (let [tab-id (:db/id tab)
+        src @(re-posh/subscribe [::game-subs/get-browser-src tab-id])]
+    [v-box
+     :style {:flex "1 1 0%"}
+     :children
+     [[input-text
+       :width "100%"
+       :model (or (str src) "https://marginalrevolution.com")
+       :on-change #(re-posh/dispatch [::game-events/set-browser-src tab-id %])
+       :change-on-blur? true]
+      [:iframe {:width "100%"
+                :height "100%"
+                :target "_parent"
+                :allow "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                :allowfullscreen true
+                :on-load #(let [new-src (-> % .-target .-contentWindow)]
+                            #_(when (not= new-src src)
+                                (re-posh/dispatch [::game-events/set-browser-src tab-id new-src])))
+                :src (or src "https://www.youtube.com/embed/S6GVXk6kbcs")}]]]))
+
+

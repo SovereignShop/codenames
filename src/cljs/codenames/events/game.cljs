@@ -52,3 +52,5 @@
          (when (not= team-color color)
            (end-turn db [nil game-id])))))))
 
+(def-event-ds ::set-browser-src [db [_ id src]]
+  [[:db/add id :html.iframe/src src]])

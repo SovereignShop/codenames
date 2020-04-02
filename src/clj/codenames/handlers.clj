@@ -59,28 +59,6 @@
                :datoms (map (partial apply ds/datom) tx-data)}]})
     tx))
 
-(defn create-group
-  [{:keys [session params] :as req}]
-  (let [{:keys [groupname username password create?]
-         }         params
-        user-conn  (facts/key->conn username facts/initial-user-facts)
-        group-conn (facts/key->conn groupname facts/initial-group-facts)
-        user       (queries/get-user @group-conn username)
-        group      (queries/get-group @group-conn groupname)
-        user-id    (or (:db/id user) -1)
-        _          (transact! group-conn
-                              username
-                              groupname
-                              [(assoc (or user (utils/make-user username)) :db/id user-id)
-                               (assoc (or group (utils/make-group groupname)) :group/users [user-id])])
-        facts-str  (facts/write-facts-str
-                    (concat (d/datoms @user-conn :eavt)
-                            (d/datoms @group-conn :eavt)))]
-    {:status  200
-     :session (assoc session :uid username :gid groupname)
-     :body    facts-str
-     :headers default-headers}))
-
 (defn join-group
   [{:keys [session params] :as req}]
   (let [{:keys [groupname username password create?]
@@ -99,10 +77,11 @@
                                        (assoc (or group (utils/make-group groupname))
                                               :db/id group-id
                                               :group/users [user-id])])
-        _                  (d/transact! user-conn [(utils/make-session
-                                                    (or (:db/id user) (tempids user-id))
-                                                    (or (:db/id group) (tempids group-id))
-                                                    groupname)])
+        _                  (d/transact! user-conn
+                                        [(utils/make-session
+                                          (or (:db/id user) (tempids user-id))
+                                          (or (:db/id group) (tempids group-id))
+                                          groupname)])
         facts-str          (facts/write-facts-str
                             (concat (d/datoms @user-conn :eavt)
                                     (d/datoms @group-conn :eavt)))]
