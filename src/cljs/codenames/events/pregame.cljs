@@ -52,10 +52,12 @@
             :db/id              -1}
            {:swig/ident   idents/session
             :session/game -1}
-           {:codenames.round/number       1
-            :codenames.round/current-turn -5
-            :codenames.round/current-team (:db/id first-team)
-            :db/id                        -4}
+           {:codenames.round/number           1
+            :codenames.round/current-turn     -5
+            :codenames.round/blue-cards-count (case first-color :blue 9 8)
+            :codenames.round/red-cards-count  (case first-color :red 9 8)
+            :codenames.round/current-team     (:db/id first-team)
+            :db/id                            -4}
            {:db/id                     -5
             :codenames.turn/team       (:db/id first-team)
             :codenames.turn/word       ""
