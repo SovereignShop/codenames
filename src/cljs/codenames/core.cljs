@@ -25,7 +25,7 @@
    [codenames.subs.db]
    [codenames.utils]
    [codenames.db :as db]
-   [codenames.sente :as sente]
+   [codenames.comms :as sente]
    [codenames.config :as config]
    [datascript.core :as d]
    [swig.core :as swig]

@@ -3,7 +3,7 @@
    [codenames.db :as db]
    [codenames.utils :as utils]
    [codenames.queries :as queries]
-   [codenames.sente :as sente]
+   [codenames.comms :as sente]
    [datascript.core :as ds]
    [hiccup.page :as h]
    [codenames.facts :as facts]

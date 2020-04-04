@@ -1,9 +1,9 @@
-(ns codenames.sente
+(ns codenames.comms
   (:require
    [codenames.db :as db]
    [codenames.facts :as facts]
    [codenames.constants.ui-idents :as idents]
-   [codenames.sente-common :as sente-common]
+   [codenames.comms-common :as comms-common]
    [codenames.queries :as queries]
    [clojure.core.async :refer [go-loop <! put!]]
    [compojure.core :refer [defroutes]]
@@ -33,7 +33,7 @@
 (defonce sente-vars
   (let [{:keys [ch-recv send-fn connected-uids
                 ajax-post-fn ajax-get-or-ws-handshake-fn]}
-        (sente/make-channel-socket! (get-sch-adapter) {:packer (sente-common/->TransitPacker)})]
+        (sente/make-channel-socket! (get-sch-adapter) {:packer (comms-common/->TransitPacker)})]
     (def ^{:dynamic true} *ring-ajax-post* ajax-post-fn)
     (def ^{:dynamic true} *ring-ajax-get-or-ws-handshake* ajax-get-or-ws-handshake-fn)
     (def ^{:dynamic true} *ch-chsk*                       ch-recv) ; ChannelSocket's receive channel

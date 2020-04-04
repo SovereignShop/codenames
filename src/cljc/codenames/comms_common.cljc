@@ -1,4 +1,4 @@
-(ns codenames.sente-common
+(ns codenames.comms-common
   (:require
    [taoensso.sente.interfaces :as interfaces]
    [datascript.transit :as dt]))

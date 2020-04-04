@@ -1,10 +1,11 @@
-(ns codenames.sente
+(ns  codenames.comms
+  "Codenames "
   (:require-macros
    [cljs.core.async.macros :as asyncm :refer (go go-loop)])
   (:require
    [codenames.constants.ui-idents :as idents]
    [codenames.events.server :as server-events]
-   [codenames.sente-common :refer [TransitPacker]]
+   [codenames.comms-common :refer [TransitPacker]]
    [re-frame.core :as re-frame]
    [re-posh.core :as re-posh]
    [datascript.transit :as dt]
@@ -41,7 +42,7 @@
           (.getAttribute el "data-csrf-token")) 
         {:keys [chsk ch-recv send-fn state]}
         (sente/make-channel-socket! "/chsk" ?csrf-token {:type :auto
-                                                         :packer (TransitPacker.) 
+                                                         :packer (TransitPacker.)
                                                          })]
     (set! *chsk*       chsk)
     (set! *ch-chsk*    ch-recv) ; ChannelSocket's receive channel

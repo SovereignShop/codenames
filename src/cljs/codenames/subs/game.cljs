@@ -56,7 +56,7 @@
   [:find ?rem .
    :in $ ?game-id
    :where
-   [?game :game/current-round ?round-id]
+   [?game-id :game/current-round ?round-id]
    [?round-id :codenames.round/blue-cards-count ?rem]])
 
 (def-sub ::current-team

@@ -1,6 +1,6 @@
 (ns codenames.events.app-state
   (:require
-   [codenames.sente :refer [init-sente!]]
+   [codenames.comms :refer [init-sente!]]
    [codenames.db :as db]
    [clojure.set :as s]
    [datascript.core :as d]

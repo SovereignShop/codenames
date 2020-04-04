@@ -71,11 +71,13 @@
         first-color  (:codenames.team/color first-team)
         rounds       (:game/rounds game)
         round-number (apply max (map :codenames.round/number rounds))]
-    (into [{:codenames.round/number       (inc round-number)
-            :codenames.round/turns        -2
-            :codenames.round/current-turn -2
-            :codenames.round/current-team (:db/id first-team)
-            :db/id                        -1}
+    (into [{:codenames.round/number           (inc round-number)
+            :codenames.round/turns            -2
+            :codenames.round/current-turn     -2
+            :codenames.round/blue-cards-count (case first-color :blue 9 8)
+            :codenames.round/red-cards-count  (case first-color :red 9 8)
+            :codenames.round/current-team     (:db/id first-team)
+            :db/id                            -1}
            {:db/id              game-id
             :game/rounds        -1
             :game/current-round -1}
@@ -145,6 +147,6 @@
        [:db.fn/retractAttribute tid :codenames.team/players])
      [[:db/add (first teams) :codenames.team/players a]]
      [[:db/add (first teams) :codenames.team/players b]])))
-
+,
 (def-event-ds ::set-timer-length [db _]
   [])

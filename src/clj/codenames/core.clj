@@ -1,6 +1,6 @@
 (ns codenames.core
   (:require
-   [codenames.sente :as sente]
+   [codenames.comms :as sente]
    [codenames.facts :as facts]
    [codenames.handlers :as handlers]
    [compojure.core :refer [defroutes]]
