@@ -26,11 +26,11 @@
   [[_ facts]]
   (re-posh/dispatch [:codenames.events.facts/add-facts facts true]))
 
-(defmethod server-event :codenames.sente/started-processing
+(defmethod server-event :codenames.comms/started-processing
   [_]
   (re-posh/dispatch [::server-events/set-server-status [:swig/ident idents/server-events] true]))
 
-(defmethod server-event :codenames.sente/finished-processing
+(defmethod server-event :codenames.comms/finished-processing
   [_]
   (re-posh/dispatch [::server-events/set-server-status [:swig/ident idents/server-events] false]))
 

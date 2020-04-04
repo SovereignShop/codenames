@@ -35,10 +35,10 @@
         groupname (:gid session)]
     (binding [sente/*current-uid* uid]
       (when-not (nil? sente/*current-uid*)
-        (sente/*chsk-send!* sente/*current-uid* [:codenames.sente/started-processing]))
+        (sente/*chsk-send!* sente/*current-uid* [:codenames.comms/started-processing]))
       (let [ret (apply routes params)]
         (when-not (nil? sente/*current-uid*)
-          (sente/*chsk-send!* sente/*current-uid* [:codenames.sente/finished-processing]))
+          (sente/*chsk-send!* sente/*current-uid* [:codenames.comms/finished-processing]))
         ret))))
 
 (def application (wrap-cors (wrap-defaults sente-route-wrapper

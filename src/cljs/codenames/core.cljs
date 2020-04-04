@@ -44,9 +44,9 @@
                        [?id :group/name ?groupname]]
                      db-after)]
       (when-not (empty? facts)
-        (cond (:tx/group-update? tx-meta) (sente/send-event! [:codenames.sente/group-facts {:gid gid
+        (cond (:tx/group-update? tx-meta) (sente/send-event! [:codenames.comms/group-facts {:gid gid
                                                                                             :datoms facts}])
-              :else (sente/send-event! [:codenames.sente/facts
+              :else (sente/send-event! [:codenames.comms/facts
                                         {:gid gid :datoms facts}]))))))
 
 (defonce init-db

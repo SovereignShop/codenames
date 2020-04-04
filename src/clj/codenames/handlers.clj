@@ -54,7 +54,7 @@
   (let [{:keys [tx-data] :as tx} (d/transact! conn facts)]
     (sente/client-event
      {:uid uid
-      :event [:codenames.sente/group-facts
+      :event [:codenames.comms/group-facts
               {:gid gid
                :datoms (map (partial apply ds/datom) tx-data)}]})
     tx))
