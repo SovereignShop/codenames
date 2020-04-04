@@ -35,11 +35,7 @@
         role              (:codenames.character-card/role card)
         word-color        (if (= role :assassin) "white" "black")]
     [box
-     :attr  {:on-click #(do
-                          (re-posh/dispatch [::game-events/card-click game-id character-card-id])
-                          #_(popover! [:img {:src "https://media.giphy.com/media/TMhjbNhJOmxRm/giphy.gif"}]
-                                      "Testing"
-                                      "title"))} 
+     :attr  {:on-click #(re-posh/dispatch [::game-events/card-click game-id character-card-id])}
      :style {:text-align       "center"
              :padding          "12px"
              :border-radius    "3px"
@@ -104,6 +100,35 @@
           (for [card row]
             [:td [display-card game-id card]])])]]]))
 
+(defn turn-handler [game-id]
+  (let [turn        @(re-posh/subscribe [::game-subs/current-turn game-id])
+        turn-id     (:db/id turn)
+        player-type @(re-posh/subscribe [::game-subs/player-type game-id])
+        codemaster? (= player-type :codemaster)
+        submitted?  (:codenames.turn/submitted? turn)]
+    (if (and codemaster? (not submitted?))
+      [h-box
+       :class "center"
+       :children
+       [[input-text
+         :model (str (:codenames.turn/word turn))
+         :placeholder "word"
+         :on-change #(re-posh/dispatch [::game-events/set-word turn-id %])]
+        [input-text
+         :model (str (:codenames.turn/number turn))
+         :placeholder "number"
+         :on-change #(re-posh/dispatch [::game-events/set-number turn-id %])]
+        [button
+         :label    "Submit"
+         :on-click #(re-posh/dispatch [::game-events/submit-clue turn-id])]]]
+      (when submitted?
+        [h-box
+         :class "center"
+         :children
+         [[box :child (str (:codenames.turn/word turn))]
+          [gap :size "10px"]
+          [box :child (str (:codenames.turn/number turn))]]]))))
+
 (defmethod swig-view/dispatch tabs/game-board
   [tab]
   (when-let [game-id @(re-posh/subscribe [::session-subs/game])]
@@ -112,6 +137,7 @@
        :width "100%"
        :children
        [[board-info game-id cards]
+        [turn-handler game-id]
         [scroller
          :style {:flex "1 1 0%"}
          :child

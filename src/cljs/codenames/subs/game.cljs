@@ -101,4 +101,11 @@
    :where
    [?id :html.iframe/src ?src]])
 
-
+(def-sub ::current-turn
+  [:find (pull ?turn-id [:codenames.turn/number
+                         :codenames.turn/word
+                         :codenames.turn/submitted?]) .
+   :in $ ?game-id
+   :where
+   [?game-id :game/current-round ?round-id]
+   [?round-id :codenames.round/current-turn ?turn-id]])

@@ -58,10 +58,7 @@
                                    [button
                                     :label    "Create group"
                                     :class    "btn-primary"
-                                    :on-click process-ok]
-                                   [button
-                                    :label    "Cancel"
-                                    :on-click process-cancel]]]
+                                    :on-click process-ok]]]
                        (when (not= @login-state :unauthenticated)
                          [line :color "#ddd" :style {:margin "10px 0 10px"}])
                        (case @login-state

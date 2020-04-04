@@ -203,10 +203,14 @@
    {:db/ident :codenames.player/id :db/valueType :db.type/uuid :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.player/user :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.player/type :db/valueType :db.type/keyword :db/cardinality :db.cardinality/one :prop/group true}
-   {:db/ident :codenames.turn/word :db/valueType :db.type/number :db/cardinality :db.cardinality/one :prop/group true}
-   {:db/ident :codenames.turn/number :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
-   {:db/ident :codenames.turn/player :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.turn/word :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.turn/number :db/valueType :db.type/number :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.turn/guesses :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :prop/group true}
+   {:db/ident :codenames.turn/submitted? :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.turn/team :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.round/number :db/valueType :db.type/number :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.round/turns :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :prop/group true}
+   {:db/ident :codenames.round/current-turn :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.round/current-team :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.piece/round :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.piece/type :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}

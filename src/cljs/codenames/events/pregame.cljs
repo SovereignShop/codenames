@@ -52,9 +52,14 @@
             :db/id              -1}
            {:swig/ident   idents/session
             :session/game -1}
-           {:codenames.round/number 1
-            :codenames.round/current-team  (:db/id first-team)
-            :db/id                  -4}]
+           {:codenames.round/number       1
+            :codenames.round/current-turn -5
+            :codenames.round/current-team (:db/id first-team)
+            :db/id                        -4}
+           {:db/id                     -5
+            :codenames.turn/team       (:db/id first-team)
+            :codenames.turn/word       ""
+            :codenames.turn/submitted? false}]
           (utils/make-game-pieces -4 db/words db/board-dimensions first-color))))
 
 (def-event-ds ::new-round [db [_ game-id]]
@@ -64,13 +69,18 @@
         first-color  (:codenames.team/color first-team)
         rounds       (:game/rounds game)
         round-number (apply max (map :codenames.round/number rounds))]
-    (info (map #(into {} %) rounds) round-number)
-    (into [{:codenames.round/number (inc round-number)
-            :codenames.round/current-team  (:db/id first-team)
-            :db/id                  -1}
+    (into [{:codenames.round/number       (inc round-number)
+            :codenames.round/turns        -2
+            :codenames.round/current-turn -2
+            :codenames.round/current-team (:db/id first-team)
+            :db/id                        -1}
            {:db/id              game-id
             :game/rounds        -1
-            :game/current-round -1}]
+            :game/current-round -1}
+           {:db/id                     -2
+            :codenames.turn/team       (:db/id first-team)
+            :codenames.turn/word       ""
+            :codenames.turn/submitted? false}]
           (utils/make-game-pieces -1 db/words db/board-dimensions first-color))))
 
 (defn retract-avs [db attr value]

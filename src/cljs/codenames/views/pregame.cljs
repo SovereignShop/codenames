@@ -31,6 +31,7 @@
         uid         @(re-posh/subscribe [::session-subs/user])
         uid->player (into {} (map (juxt (comp :db/id :codenames.player/user) identity)) players)]
     [v-box
+     :class "codenames-player-box"
      :children
      [[h-box
        :gap "5px"
@@ -71,6 +72,7 @@
       :width "100%"
       :children
       [[v-box
+        :class "codenames-player-board"
         :width "100%"
         :gap "20px"
         :children
