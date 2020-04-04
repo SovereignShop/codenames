@@ -28,7 +28,8 @@ clj -A:clj-prod:clj-dev
 clj -A:cljs-prod:cljs-dev  # Preloaded with figwheel.main
 ```
 
-Connect to them using your favorite editor.
+Connect to them using your favorite editor. You can launch figwheel main 
+after connecting.
 
 ## Prerequisites.
 
