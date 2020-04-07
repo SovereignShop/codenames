@@ -27,7 +27,9 @@
    [?assassin-miss :codenames.character-card/played? ?turn-id]
    [?assassin-miss :codenames.character-card/role :assassin]])
 
-(def-sub ::count-opponent-answers
-  [:find (count-distinct ?card-id)
-   :in $ ?user-id
-   ])
+(def-sub ::leader-board
+  [:find ?name 
+   :in $
+   :where
+   [?session-id :session/user ?user-id]
+   [?user-id :user/name ?name]])

@@ -10,3 +10,4 @@
 (def blue-team-tab ::blue-team-tab)
 (def red-team-tab  ::red-team-tab)
 (def db            ::db)
+(def app-root      ::app-root)

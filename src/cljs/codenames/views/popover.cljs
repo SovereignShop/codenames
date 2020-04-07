@@ -12,7 +12,7 @@
                 :popover/title
                 :popover/label
                 :popover/content]}
-        @(re-posh/subscribe [::pop-subs/get-popover [:swig/ident idents/main-popover]])] 
+        @(re-posh/subscribe [::pop-subs/get-popover [:swig/ident idents/main-popover]])]
     (when showing?
       [modal-panel
        :backdrop-color   "grey"

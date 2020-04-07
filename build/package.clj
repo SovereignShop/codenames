@@ -16,7 +16,6 @@
                      {:compile-path "target/classes"
                       :classpath    (classpath/make-classpath {:deps-map deps-map
                                                                :aliases  [:clj-prod :aot]})})
-
     (jar/jar 'badigeon/badigeon {:mvn/version "0.0.1-SNAPSHOT"}
              {;; The jar file produced.
               :out-path                "target/codenames-0.0.1-SNAPSHOT.jar"

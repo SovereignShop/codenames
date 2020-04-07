@@ -78,3 +78,9 @@
 
 (def-event-ds ::submit-clue [db [_ turn-id]]
   [[:db/add turn-id :codenames.turn/submitted? true]])
+
+(def-event-ds ::set-winning-team
+  [db[_ game-id team-id]]
+  (let [game  (d/entity db game-id)
+        round (:game/current-round game)]
+    [[:db/add (:db/id round) :codenames.round/winning-team team-id]]))

@@ -3,6 +3,7 @@
    [codenames.subs.game :as game-subs]
    [codenames.subs.app-state :as app-state]
    [codenames.subs.session :as session-subs]
+   [codenames.subs.stats :as stat-subs]
    [codenames.constants.ui-idents :as idents]
    [codenames.constants.ui-tabs :as tabs]
    [codenames.constants.ui-splits :as splits]
@@ -12,6 +13,7 @@
    [swig.views :as swig-view]
    [re-posh.core :as re-posh]
    [re-com.core :as com :refer [h-box v-box box button gap scroller input-text]]))
+
 
 (defn popover! [content label title]
   (re-posh/dispatch [:codenames.events.popover/show
@@ -60,10 +62,12 @@
      [[:div {:style {:color "red" :width "20px"}} red-remaining]
       [:div {:style {:color "blue" :width "20px"}} blue-remaining]]]))
 
-(defn board-info [game-id cards]
-  (let [current-team      @(re-posh/subscribe [::game-subs/current-team game-id])
-        team-color        (:codenames.team/color current-team)
-        [_ winning-color] @(re-posh/subscribe [::game-subs/game-over game-id])]
+(defn board-info [tab-id game-id cards]
+  (let [current-team                 @(re-posh/subscribe [::game-subs/current-team game-id])
+        team-color                   (:codenames.team/color current-team)
+        [winning-team winning-color] @(re-posh/subscribe [::game-subs/game-over game-id])]
+    #_(when winning-team
+      (re-posh/dispatch [::game-events/set-winning-team game-id winning-team]))
     [h-box
      :class "center"
      :gap "20px"
@@ -72,7 +76,7 @@
        :on-click #(re-posh/dispatch [::pregame-events/new-round game-id])
        :label "New Round"]
       [button
-       :on-click #(re-posh/dispatch [::pregame-events/enter-pregame])
+       :on-click #(re-posh/dispatch [::pregame-events/enter-pregame tab-id])
        :label "Exit Game"]
       [button
        :label "End Turn"
@@ -130,13 +134,13 @@
           [box :child (str (:codenames.turn/number turn))]]]))))
 
 (defmethod swig-view/dispatch tabs/game-board
-  [tab]
+  [{tab-id :db/id}]
   (when-let [game-id @(re-posh/subscribe [::session-subs/game])]
     (let [cards @(re-posh/subscribe [::game-subs/word-cards game-id])]
       [v-box
        :width "100%"
        :children
-       [[board-info game-id cards]
+       [[board-info tab-id game-id cards]
         [turn-handler game-id]
         [scroller
          :style {:flex "1 1 0%"}
@@ -145,7 +149,16 @@
 
 (defmethod swig-view/dispatch tabs/leader-board
   [tab]
-  [:div "Leader Board"])
+  [:div "Leader Board"]
+  #_(let [stats @(re-posh/subscribe [::stat-subs/leader-board])]
+    [:table
+     [:thead
+      [:tr [:td "Name"] [:td "CM Wins"] [:td "CM Losses"] [:td "Wins"] [:td "Losses"]]]
+     [:tbody
+      (for [stat stats]
+        [:tr
+         (for [s stat]
+           [:td (str s)])])]]))
 
 (defmethod swig-view/dispatch tabs/score-board
   [tab]

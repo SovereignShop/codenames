@@ -17,7 +17,8 @@
 (def-sub ::get-user
   [:find (pull ?uid [:user/alias
                      :user/id
-                     :user/name]) .
+                     :user/name
+                     :user/last-seen]) .
    :in $ ?uid
    :where
    [?uid :user/name]])

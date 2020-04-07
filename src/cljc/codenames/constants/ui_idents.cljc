@@ -7,3 +7,5 @@
 (def modal-dialog             ::modal-dialog)
 (def login-window             ::login-window)
 (def server-events            ::server-events)
+(def clock                    ::clock)
+(def chat                     ::chat)

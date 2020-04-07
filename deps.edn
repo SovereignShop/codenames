@@ -1,28 +1,28 @@
 {:paths ["src/cljc"]
- :deps  {org.clojure/clojure                 {:mvn/version "1.10.1-beta2"}
-         com.taoensso/timbre                 {:mvn/version "4.10.0"}
-         org.clojure/tools.cli               {:mvn/version "0.4.2"}
-         org.clojure/data.json               {:mvn/version "0.2.6"}
-         datascript-transit                  {:mvn/version "0.3.0"}
-         swig                                {:local/root "deps/modules/swig"}
-         borkdude/sci                        {:mvn/version "0.0.13-alpha.12"}
-         thi.ng/geom                         {:mvn/version "1.0.0-RC3"
-                                              :exclusions  [org.clojure/clojurescript
-                                                            org.clojure/clojure]}
-         posh                                {:git/url "https://github.com/cartesian-theatrics/posh.git"
-                                              :sha     "9110abfd204e239ddb8a16f9c0e0a84265e37009"}
-         re-posh                             {:exclusions [denistakeda/posh re-frame]
-                                              :git/url    "https://github.com/cartesian-theatrics/re-posh.git"
-                                              :sha        "207522e14499b389b555650a60f30f1dfaa978fe"}
-         com.taoensso/sente                  {:mvn/version "1.15.0"}
-         http-kit                            {:mvn/version "2.3.0"}
-         thi.ng/domus                        {:mvn/version "0.2.0"}
-         org.clojure/core.match              {:mvn/version "0.3.0"}
-         org.clojure/spec.alpha              {:mvn/version "0.2.176"}
-         io.replikativ/konserve              {:mvn/version "0.5.0"
-                                              :exclusions  [org.clojure/clojurescript]}
-         datascript                          {:mvn/version "0.18.4"
-                                              :exclusions  [org.clojure/clojurescript]}}
+ :deps  {org.clojure/clojure    {:mvn/version "1.10.1-beta2"}
+         com.taoensso/timbre    {:mvn/version "4.10.0"}
+         org.clojure/tools.cli  {:mvn/version "0.4.2"}
+         org.clojure/data.json  {:mvn/version "0.2.6"}
+         datascript-transit     {:mvn/version "0.3.0"}
+         swig                   {:local/root "deps/modules/swig"}
+         borkdude/sci           {:mvn/version "0.0.13-alpha.12"}
+         thi.ng/geom            {:mvn/version "1.0.0-RC3"
+                                 :exclusions  [org.clojure/clojurescript
+                                               org.clojure/clojure]}
+         posh                   {:git/url "https://github.com/cartesian-theatrics/posh.git"
+                                 :sha     "9110abfd204e239ddb8a16f9c0e0a84265e37009"}
+         re-posh                {:exclusions [denistakeda/posh re-frame]
+                                 :git/url    "https://github.com/cartesian-theatrics/re-posh.git"
+                                 :sha        "207522e14499b389b555650a60f30f1dfaa978fe"}
+         com.taoensso/sente     {:mvn/version "1.15.0"}
+         http-kit               {:mvn/version "2.3.0"}
+         thi.ng/domus           {:mvn/version "0.2.0"}
+         org.clojure/core.match {:mvn/version "0.3.0"}
+         org.clojure/spec.alpha {:mvn/version "0.2.176"}
+         io.replikativ/konserve {:mvn/version "0.5.1"
+                                 :exclusions  [org.clojure/clojurescript]}
+         datascript             {:mvn/version "0.18.4"
+                                 :exclusions  [org.clojure/clojurescript]}}
 
  :aliases
  {:clj-dev
@@ -46,20 +46,24 @@
    :jvm-opts    ["-Xmx6g"]}
 
   :clj-prod
-  {:extra-deps  {cider/cider-nrepl             {:mvn/version "0.23.0-SNAPSHOT"}
-                 nrepl                         {:mvn/version "0.6.0"}
-                 io.replikativ/datahike        {:mvn/version "0.2.1"}
-                 org.clojure/tools.nrepl       {:mvn/version "0.2.12"}
-                 ring-cors                     {:mvn/version "0.1.13"}
-                 clj-time                      {:mvn/version "0.15.0"}
-                 cheshire                      {:mvn/version "5.8.1"}
-                 ring/ring-jetty-adapter       {:mvn/version "1.5.1"}
-                 clj-http                      {:mvn/version "3.10.0"}
-                 byte-transforms               {:mvn/version "0.1.4"}
-                 byte-streams                  {:mvn/version "0.2.4"}
-                 cerber/cerber-oauth2-provider {:mvn/version "2.0.0"}
-                 ring                          {:mvn/version "1.7.1"}
-                 compojure                     {:mvn/version "1.6.1"}}
+  {:extra-deps  {cider/cider-nrepl                      {:mvn/version "0.23.0-SNAPSHOT"}
+                 nrepl                                  {:mvn/version "0.6.0"}
+                 io.replikativ/datahike                 {:mvn/version "0.2.1"}
+                 io.replikativ/konserve-clutch          {:mvn/version "0.1.3"}
+                 org.clojure/tools.nrepl                {:mvn/version "0.2.12"}
+                 ring-cors                              {:mvn/version "0.1.13"}
+                 org.clojars.mihaelkonjevic/konserve-pg {:mvn/version "0.1.2"}
+                 clj-time                               {:mvn/version "0.15.0"}
+                 cheshire                               {:mvn/version "5.8.1"}
+                 io.replikativ/konserve-welle           {:mvn/version "0.1.0"}
+                 ring/ring-jetty-adapter                {:mvn/version "1.5.1"}
+                 io.replikativ/konserve-carmine         {:mvn/version "0.1.3"}
+                 clj-http                               {:mvn/version "3.10.0"}
+                 byte-transforms                        {:mvn/version "0.1.4"}
+                 byte-streams                           {:mvn/version "0.2.4"}
+                 cerber/cerber-oauth2-provider          {:mvn/version "2.0.0"}
+                 ring                                   {:mvn/version "1.7.1"}
+                 compojure                              {:mvn/version "1.6.1"}}
    :main-opts   ["-m" "codenames.core"]
    :extra-paths ["src/clj" "resources"]
    :jvm-opts    ["-Xmx6g"]}

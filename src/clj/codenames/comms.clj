@@ -71,11 +71,11 @@
 
 (defmethod client-event :chsk/ws-ping
   [{username :uid}]
-  (let [conn (facts/key->conn username facts/initial-user-facts)
-        session (d/entity @conn [:swig/ident idents/session])
-        groupname (:session/groupname session)
+  (let [conn       (facts/key->conn username facts/initial-user-facts)
+        session    (d/entity @conn [:swig/ident idents/session])
+        groupname  (:session/groupname session)
         group-conn (facts/key->conn groupname facts/initial-group-facts)
-        facts [[:db/add [:user/name username] :user/last-seen (java.util.Date.)]]]
+        facts      [[:db/add [:user/name username] :user/last-seen (java.util.Date.)]]]
     (d/transact! group-conn facts)
     (doseq [{other-username :user/name} (queries/groupname->users @group-conn groupname)]
       (*chsk-send!* other-username [::facts facts]))

@@ -11,20 +11,26 @@
    [swig.events :refer [exit-fullscreen]]
    [taoensso.timbre :refer-macros [debug info warn error]]))
 
-(def-event-ds ::enter-game [db [_ game-id]]
-  (into [[:db.fn/retractAttribute [:swig/ident tabs/pregame] :swig.ref/parent]
-         [:db/add [:swig/ident :swig/root-view] :swig.view/active-tab [:swig/ident tabs/game]]
-         [:db/add [:swig/ident tabs/game] :swig.ref/parent [:swig/ident :swig/root-view]]
-         [:db/add [:swig/ident idents/session] :session/game game-id]]))
+(def-event-ds ::enter-game [db [_ tab-id game-id]]
+  (let [tab (d/entity db tab-id)
+        parent (:swig.ref/parent tab)
+        parent-id (:db/id parent)]
+    (into [[:db.fn/retractAttribute tab-id :swig.ref/parent]
+           [:db/add parent-id :swig.view/active-tab [:swig/ident tabs/game]]
+           [:db/add [:swig/ident tabs/game] :swig.ref/parent parent-id]
+           [:db/add [:swig/ident idents/session] :session/game game-id]])))
 
 (def-event-ds ::enter-pregame [db _]
-  (let [tab (d/entity db [:swig/ident tabs/game-board])]
+  (let [tab (d/entity db [:swig/ident tabs/game-board])
+        game-tab (d/entity db[:swig/ident tabs/game])
+        parent (:swig.ref/parent game-tab)
+        parent-id (:db/id parent)]
     (into (if (:swig.tab/fullscreen tab)
             (exit-fullscreen db [nil (:db/id tab)])
             [])
-          [[:db.fn/retractAttribute [:swig/ident tabs/game] :swig.ref/parent]
-           [:db/add [:swig/ident :swig/root-view] :swig.view/active-tab [:swig/ident tabs/pregame]]
-           [:db/add [:swig/ident tabs/pregame] :swig.ref/parent [:swig/ident :swig/root-view]]])))
+          [[:db.fn/retractAttribute (:db/id game-tab) :swig.ref/parent]
+           [:db/add parent-id :swig.view/active-tab [:swig/ident tabs/pregame]]
+           [:db/add [:swig/ident tabs/pregame] :swig.ref/parent parent-id]])))
 
 
 (comment

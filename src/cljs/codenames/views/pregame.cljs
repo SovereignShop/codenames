@@ -8,23 +8,31 @@
    [codenames.subs.app-state :as app-subs]
    [codenames.subs.session :as session-subs]
    [codenames.events.pregame :as pregame-events]
+   [cljs-time.core :as time]
    [swig.views :as swig-view]
    [re-com.core :refer [h-box v-box button line box scroller gap]]
    [re-posh.core :as re-posh]
    [goog.string :as gstr]
    [taoensso.timbre :refer-macros [debug info warn error]]))
 
+
 (defn show-player [player]
   (let [player-type (:codenames.player/type player)
         player-user @(re-posh/subscribe
                       [::user-subs/get-user
                        (:db/id (:codenames.player/user player))])
-        username    (:user/name player-user)]
+        username    (:user/name player-user)
+        last-seen   (:user/last-seen player-user)
+        now         @(re-posh/subscribe [:codenames.subs.clock/latest-time])]
     [h-box
      :gap "20px"
      :children
      [[box :style {:color "black"} :child (str username)]
-      [box :style {:color "black"} :child (str player-type)]]]))
+      [box :style {:color "black"} :child (str player-type)]
+      [box :style {:color "black"} :child (str "Online "
+                                               (time/in-minutes (time/interval (or last-seen (time/now)) (time/now)))
+                                               " minutes ago")]]]))
+
 
 (defn show-players [color game-id]
   (let [players     @(re-posh/subscribe [::pregame-subs/players color game-id])
@@ -61,8 +69,8 @@
      [[show-players :blue game-id]
       [show-players :red game-id]]]))
 
-(defmethod swig-view/dispatch splits/team-selection-split
-  [split child]
+(defmethod swig-view/dispatch tabs/pregame
+  [{tab-id :db/id}]
   (let [games @(re-posh/subscribe [::pregame-subs/open-games])
         my-game @(re-posh/subscribe [::session-subs/game])]
     [scroller
@@ -87,7 +95,6 @@
                   :children
                   [[button
                     :label "Enter Game"
-                    :on-click #(re-posh/dispatch [::pregame-events/enter-game game-id])]
+                    :on-click #(re-posh/dispatch [::pregame-events/enter-game tab-id game-id])]
                    [show-players :blue game-id]
-                   [show-players :red game-id]
-                   #_child]])))]]]]))
+                   [show-players :red game-id]]])))]]]]))

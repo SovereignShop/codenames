@@ -133,42 +133,47 @@
 (def pregame-layout
   (swig/view {:swig/ident           :swig/root-view
               :swig.view/active-tab [:swig/ident tabs/pregame]}
-             #_(swig/tab {:swig/ident     tabs/db
-                          :swig.tab/label {:swig/type         :swig.type/cell
-                                           :swig.cell/element "DB"}})
-             (swig/tab {:swig/ident     tabs/users
-                        :swig.tab/label {:swig/type         :swig.type/cell
-                                         :swig.cell/element "Users"}})
-             (swig/tab {:swig/ident     tabs/leader-board
-                        :swig.tab/label {:swig/type         :swig.type/cell
-                                         :swig.cell/element "Leader Board"}
-                        :swig.tab/ops   [{:swig/type           :swig.type/operation
-                                          :swig.operation/name :operation/fullscreen}]})
-             (swig/tab {:swig/ident     tabs/game
-                        :swig.tab/label {:swig/type         :swig.type/cell
-                                         :swig.cell/element "Game"}
-                        :swig.tab/ops   [{:swig/type           :swig.type/operation
-                                          :swig.operation/name :operation/fullscreen}]}
-                       (swig/split {:swig/ident               splits/game-split
-                                    :swig.split/orientation   :vertical
-                                    :swig.split/split-percent 30}
-                                   (swig/tab {:swig/ident tabs/player-board})
-                                   #_(swig/split {:swig/ident               splits/game-info-split
-                                                :swig.split/split-percent 50
-                                                :swig.split/orientation   :horizontal}
-                                               (swig/tab {:swig/ident tabs/score-board}))
-                                   (swig/tab {:swig/ident   tabs/game-board
-                                              :swig.tab/ops [{:swig/type           :swig.type/operation
-                                                              :swig.operation/name :operation/fullscreen}]})))
-             (swig/tab {:swig/ident     tabs/pregame
-                        :swig.tab/label {:swig/type         :swig.type/cell
-                                         :swig.cell/element "Pregame"}}
-                       (swig/split {:swig/ident               splits/team-selection-split
-                                    :swig.dispatch/handler    splits/team-selection-split
-                                    :swig.split/split-percent 50
-                                    :swig.split/orientation   :vertical}
-                                   (swig/tab {:swig/ident tabs/blue-team-tab})
-                                   (swig/tab {:swig/ident tabs/red-team-tab})))))
+             (swig/view {:swig/ident           tabs/app-root
+                         :swig.view/active-tab [:swig/ident tabs/pregame]}
+                        (swig/tab {:swig/ident     tabs/users
+                                   :swig.tab/label {:swig/type         :swig.type/cell
+                                                    :swig.cell/element "Users"}})
+                        (swig/tab {:swig/ident     tabs/leader-board
+                                   :swig.tab/label {:swig/type         :swig.type/cell
+                                                    :swig.cell/element "Leader Board"}
+                                   :swig.tab/ops   [{:swig/type           :swig.type/operation
+                                                     :swig.operation/name :operation/fullscreen}
+                                                    {:swig/type           :swig.type/operation
+                                                     :swig.operation/name :operation/divide-horizontal}]})
+                        (swig/tab {:swig/ident     tabs/game
+                                   :swig.tab/label {:swig/type         :swig.type/cell
+                                                    :swig.cell/element "Game"}
+                                   :swig.tab/ops   [{:swig/type           :swig.type/operation
+                                                     :swig.operation/name :operation/fullscreen}
+                                                    {:swig/type           :swig.type/operation
+                                                     :swig.operation/name :operation/divide-horizontal}]}
+                                  (swig/split {:swig/ident               splits/game-split
+                                               :swig.split/orientation   :vertical
+                                               :swig.split/split-percent 30
+                                               :swig.split/ops           [{:swig/type           :swig.type/operation
+                                                                           :swig.operation/name :operation/join}]}
+                                              (swig/view {:swig.view/active-tab [:swig/ident tabs/player-board]}
+                                                         (swig/tab {:swig/ident     tabs/player-board
+                                                                    :swig.tab/label {:swig/type         :swig.type/cell
+                                                                                     :swig.cell/element "Players"}
+                                                                    :swig.tab/ops [{:swig/type :swig.type/operation
+                                                                                    :swig.operation/name :operation/divide-vertical}]}))
+                                              (swig/view {:swig.view/active-tab [:swig/ident  tabs/game-board]}
+                                                         (swig/tab {:swig/ident     tabs/game-board
+                                                                    :swig.tab/label {:swig/type         :swig.type/cell
+                                                                                     :swig.cell/element "Board"}
+                                                                    :swig.tab/ops   [{:swig/type           :swig.type/operation
+                                                                                      :swig.operation/name :operation/fullscreen}
+                                                                                     {:swig/type :swig.type/operation
+                                                                                      :swig.operation/name :operation/divide-vertical}]}))))
+                        (swig/tab {:swig/ident     tabs/pregame
+                                   :swig.tab/label {:swig/type         :swig.type/cell
+                                                    :swig.cell/element "Pregame"}}))))
 
 (defonce default-db (into [] cat [extras]))
 
@@ -191,8 +196,6 @@
    {:db/ident :game/name :db/valueType :db.type/string :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :game/current-round :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :game/rounds :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :prop/group true}
-   {:db/ident :codenames.round/blue-cards-count :db/valueType :db.type/number :db/cardinality :db.cardinality/one :prop/group true}
-   {:db/ident :codenames.round/red-cards-count :db/valueType :db.type/number :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :game/teams :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :prop/group true}
    {:db/ident :game/finished? :db/valueType :db.type/boolean :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :game/round :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
@@ -212,6 +215,9 @@
    {:db/ident :codenames.round/turns :db/valueType :db.type/ref :db/cardinality :db.cardinality/many :prop/group true}
    {:db/ident :codenames.round/current-turn :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.round/current-team :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.round/winning-team :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.round/blue-cards-count :db/valueType :db.type/number :db/cardinality :db.cardinality/one :prop/group true}
+   {:db/ident :codenames.round/red-cards-count :db/valueType :db.type/number :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.piece/round :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.piece/type :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}
    {:db/ident :codenames.word-card/character-card :db/valueType :db.type/ref :db/cardinality :db.cardinality/one :prop/group true}

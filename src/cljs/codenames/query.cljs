@@ -2,6 +2,7 @@
   (:require
    [cljs-http.client :as http]
    [codenames.db :as db]
+   [codenames.constants.ui-tabs :as tabs]
    [codenames.constants.ui-idents :as idents]
    [codenames.constants.ui-views :as views]
    [codenames.events.facts :as fact-events]
@@ -109,16 +110,17 @@
 (defn do-login [credentials]
   (re-posh/dispatch [:codenames.events.app-state/login-waiting])
   (request
-   {:uri (gstr/format "%slogin" js/window.location.href)
-    :method :get
-    :edn? false
-    :params credentials
+   {:uri     (gstr/format "%slogin" js/window.location.href)
+    :method  :get
+    :edn?    false
+    :params  credentials
     :success (fn [resp]
                (re-posh/dispatch [:codenames.events.app-state/login-success])
-               (let [datoms (into [[:db/retractEntity [:swig/ident :swig/root-view]]
-                                   [:db/retractEntity [:swig/ident idents/modal-dialog]]
-                                   [:db/retractEntity [:swig/ident idents/modal-dialog]]]
-                                  (dt/read-transit-str (.getResponseText resp)))
+               (let [datoms (-> (into [[:db/retractEntity [:swig/ident :swig/root-view]]
+                                       [:db/retractEntity [:swig/ident idents/modal-dialog]]
+                                       [:db/retractEntity [:swig/ident idents/modal-dialog]]]
+                                      (dt/read-transit-str (.getResponseText resp)))
+                                (conj [:db.fn/retractAttribute [:swig/ident tabs/game] :swig.ref/parent]))
                      datoms (conj datoms
                                   {:swig/ident       idents/main-popover
                                    :swig/type        :swig.type/window
@@ -126,6 +128,6 @@
                                    :popover/showing? false})]
                  (info "Login succeeded: " datoms)
                  (re-posh/dispatch [:codenames.events.facts/add-facts datoms true])))
-    :error (fn [resp]
-             (re-posh/dispatch [:codenames.events.app-state/login-fail])
-             (warn "Login failed"))}))
+    :error   (fn [resp]
+               (re-posh/dispatch [:codenames.events.app-state/login-fail])
+               (warn "Login failed"))}))

@@ -23,7 +23,7 @@
                (into swig/full-schema (remove :prop/group datascript-db/schema)))
          (hiccup->facts datascript-db/pregame-layout)]))
 
-(def initial-group-facts 
+(def initial-group-facts
   (into []
         cat
         [(mapv #(select-keys % [:db/ident :db/valueType :db/cardinality :db/unique])
