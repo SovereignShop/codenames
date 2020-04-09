@@ -3,7 +3,9 @@
    goog.ui.KeyboardShortcutHandler)
   (:require
    [swig.views :as swig-view]
+   [cljs.core.async :refer [go timeout]]
    [codenames.subs.chat :as chat-subs]
+   [codenames.events.chat :as chat-events]
    [cljsjs.highlight]
    [cljsjs.highlight.langs.clojure]
    [codenames.constants.ui-idents :as idents]
@@ -14,7 +16,10 @@
    [goog.string :as gstring]
    [goog.string.format]
    [goog.style :as gstyle]
-   [re-com.core :refer [box scroller h-box throbber gap]]))
+   [markdown.core :as md]
+   [reagent.core :as r]
+   [goog.events.KeyCodes]
+   [re-com.core :refer [box scroller h-box v-box input-text input-textarea throbber gap]]))
 
 (defn hl-clj-str
   "Returns a string containing HTML that highlights the message. Takes a string
@@ -36,14 +41,15 @@
 
 (defn render-msg
   [msg]
-  (h "span" #js{"dangerouslySetInnerHTML" #js{"__html" (hl-clj-str (msg->str msg))}}))
+  (h "span" #js{"dangerouslySetInnerHTML" #js{"__html" (md/md->html (first msg))}}))
 
 (defn severity->color
   "Returns a color for the given severity
    http://www.w3schools.com/cssref/css_colornames.asp"
   [severity]
   (println "severity:" severity)
-  (case (name (or severity ""))
+  "steelblue"
+  #_(case (name (or severity ""))
     "DEBG" "gray"
     "TRAC" "darkgray"
     "INFO" "steelblue"
@@ -56,8 +62,7 @@
     nil))
 
 (defn server-log-tab []
-  (let [processing? (re-posh/subscribe [::chat-subs/processing? [:swig/ident idents/chat]])
-        msg @(re-posh/subscribe [::chat-subs/get-current-msg [:swig/ident idents/chat]])
+  (let [msg @(re-posh/subscribe [::chat-subs/get-current-msg [:swig/ident idents/chat]])
         level (or (:level msg) "")
         vargs (:vargs msg)]
     [h-box
@@ -65,18 +70,14 @@
      :children
      [[:div {:style {:width "18px"}}]
       [throbber
-       :style {:visibility (if @processing? "visible" "hidden")}
-       :size :smaller :color "red"]
+       :size :smaller
+       :color "red"]
       [:span {:style {:color (severity->color level)}} (.toUpperCase (name level))]
       [:span {:style {:flex "1 1 0%"
                       :height "18px"
                       :max-width "1200px"
-                      :overflow "hidden"}} (render-msg vargs)]
+                      :overflow "hidden"}} (render-msg (first vargs))]
       [:div {:style {:width "40px"}}]]]))
-
-(defmethod swig-view/dispatch idents/chat
-  []
-  [server-log-tab])
 
 (defonce db (atom {:showing? true
                    :max-logs 500
@@ -300,7 +301,6 @@
   (h "ul" #js{:style #js{:padding    ".5em"
                          :margin     "0em"
                          :lineHeight "1.06em"}}
-     ;; Fast array reverse:
      (let [frozen-idx    (:frozen-at @db)
            last-to-start (if (some? frozen-idx)
                            frozen-idx
@@ -312,7 +312,7 @@
 
            aout #js[]]
        (dotimes [i last-to-start]
-         (let [lg-ev (aget logs (- last-to-start i 1))]
+         (let [lg-ev (aget logs i)]
            (when ^boolean (filter-fn lg-ev)
              (.push aout (@render-log-event lg-ev)))))
        aout)))
@@ -496,6 +496,7 @@
   "This is the main log functions:
   - ns - string
   - severity - string, like \"INFO\" or \"WARN\"
+
   - msg0 - If the map {::meta-data {...}} attaches this to the msg
     Otherwise the first message"
   [ns severity msg0 & msg]
@@ -514,8 +515,54 @@
       (last msg)
       msg0)))
 
+(comment
+
+  (add-log! "John" "INFO" "hello world" "This is Kinda cool" {:some :data})
+
+  )
+
 (defn clear!
   "Clears all logs"
   []
   (set! (:logs @db) -length 0)
   (request-rerender!))
+
+(defmethod swig-view/dispatch idents/chat
+  [tab]
+  (let [shift-pressed? (r/atom false)
+        model (r/atom "")
+        rows (r/atom 1)]
+    [(fn []
+       [v-box
+        :style {:flex "1 1 0%"}
+        :children
+        [[scroller
+          :style {:flex "1 1 0%"}
+          :attr {:id "chat-scroller"
+                 :on- #(let [elem (.getElementById js/document "chat-scroller")]
+                               (js/console.log "height:"
+                                               (.-scrollHeight elem)
+                                               (.-scrollTop elem))
+                               (set! (.-scrollTop elem) (.-scrollHeight elem)))}
+          :child
+          [:div {:id "__klang__id__"
+                 :style {:flex "1 1 0%"
+                         :background-color "black"}}
+           "Hello"]]
+         [:div {:id "chat-box-textarea"}
+          [input-textarea
+           :model model
+           :rows @rows
+           :width "100%"
+           :attr {:on-key-down (fn [event]
+                                 (if (and (.getModifierState event "Shift")
+                                          (= (.-which event) goog.events.KeyCodes/ENTER))
+                                   (swap! rows inc)
+                                   (when (= (.-which event) goog.events.KeyCodes/ENTER)
+                                         (do (reset! rows 1)
+                                             (.preventDefault event)
+                                             (re-posh/dispatch [::chat-events/new-message (-> event .-target .-value)])
+                                             (reset! model "")))))
+                  }
+           :change-on-blur? false
+           :on-change #(reset! model %)]]]])]))

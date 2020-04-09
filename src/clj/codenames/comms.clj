@@ -49,7 +49,8 @@
   [{:keys [event]}]
   (warn "Unknown client event: " (first event)))
 
-(defn insert-facts! [username groupname datoms group-update?]
+(defn insert-facts! [username groupname datoms tx-meta group-update?]
+  (info tx-meta)
   (let [user-facts  (filter (comp db/user-attributes :a) datoms)
         group-facts (filter (comp db/group-attributes :a) datoms)
         user-conn   (facts/key->conn username facts/initial-user-facts)
@@ -60,13 +61,15 @@
         (doseq [{other-username :user/name} (queries/groupname->users @group-conn groupname)]
           (facts/insert-facts! (facts/key->conn other-username facts/initial-user-facts) user-facts)
           (when (not= other-username username)
-            (*chsk-send!* other-username [::facts user-facts])))))
+            (*chsk-send!* other-username [::facts {:datoms user-facts
+                                                   :tx-meta tx-meta}])))))
     (when (seq group-facts)
       (facts/insert-facts! group-conn group-facts)
       (if *chsk-send!*
         (doseq [{other-username :user/name} (queries/groupname->users @group-conn groupname)
                 :when                       (not= other-username username)]
-          (*chsk-send!* other-username [::facts group-facts]))
+          (*chsk-send!* other-username [::facts {:datoms group-facts
+                                                 :tx-meta tx-meta}]))
         (warn "Undefined var: *chsk-send!*")))))
 
 (defmethod client-event :chsk/ws-ping
@@ -82,12 +85,12 @@
     (info "ping event")))
 
 (defmethod client-event ::facts
-  [{[_ {:keys [gid datoms]}] :event uid :uid}]
-  (insert-facts! uid gid datoms false))
+  [{[_ {:keys [gid datoms tx-meta]}] :event uid :uid}]
+  (insert-facts! uid gid datoms tx-meta false))
 
 (defmethod client-event ::group-facts
-  [{[_ {:keys [gid datoms]}] :event uid :uid}]
-  (insert-facts! uid gid datoms true))
+  [{[_ {:keys [gid datoms tx-meta]}] :event uid :uid}]
+  (insert-facts! uid gid datoms tx-meta true))
 
 (defn init-sente! []
   (info "starting client receive loop")
@@ -98,6 +101,8 @@
         (info "Exiting")
         (do (client-event x)
             (recur))))))
+(comment 
+  (put! *ch-chsk* {:event ::stop}))
 
 (timbre/set-level! :info)
 

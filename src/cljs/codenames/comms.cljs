@@ -23,8 +23,8 @@
 (defmulti server-event first)
 
 (defmethod server-event ::facts
-  [[_ facts]]
-  (re-posh/dispatch [:codenames.events.facts/add-facts facts true]))
+  [[_ {:keys [datoms tx-meta]}]]
+  (re-posh/dispatch [:codenames.events.facts/add-facts (with-meta datoms tx-meta) true]))
 
 (defmethod server-event :codenames.comms/started-processing
   [_]

@@ -13,8 +13,8 @@
  (fn [_ [_ facts dont-save?]]
    (debug :add-facts :facts/count (count facts))
    (if dont-save?
-     (with-meta facts {:db.transaction/no-save true})
-     (with-meta facts {:db.transaction/no-save false}))))
+     (vary-meta facts merge {:db.transaction/no-save true})
+     (vary-meta facts merge {:db.transaction/no-save false}))))
 
 (re-frame/reg-fx
  ::save-datoms

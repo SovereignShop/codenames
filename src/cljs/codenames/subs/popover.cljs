@@ -1,4 +1,4 @@
-(ns ^:figwheel-always codenames.subs.popover
+(ns codenames.subs.popover
   (:require
    [swig.macros :refer [def-pull-sub]]))
 

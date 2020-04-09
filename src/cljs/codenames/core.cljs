@@ -24,6 +24,7 @@
    [codenames.views.pregame]
    [codenames.views.db]
    [codenames.views.popover]
+   [codenames.views.chat :as chat]
    [codenames.subs.db]
    [codenames.utils]
    [codenames.clock :as clock]
@@ -39,6 +40,11 @@
 (defonce _ (re-posh/connect! db/conn))
 
 (defn tx-log-listener [{:keys [db-before db-after tx-data tx-meta]}]
+  (when (:db.transaction/log-message? tx-meta)
+    (let [log-data (into {} (map (juxt :a :v)) tx-data)
+          user-id  (:chat/user log-data)
+          user     (d/entity db-after user-id)]
+      (chat/add-log! (:chat/user log-data) (:user/name user) (:chat/message log-data))))
   (when-not (:db.transaction/no-save tx-meta)
     (let [facts (into [] (filter (comp db/schema-keys :a)) tx-data)
           gid   (d/q '[:find ?groupname .
@@ -47,10 +53,11 @@
                        [?id :group/name ?groupname]]
                      db-after)]
       (when-not (empty? facts)
-        (cond (:tx/group-update? tx-meta) (sente/send-event! [:codenames.comms/group-facts {:gid gid
+        (cond (:tx/group-update? tx-meta) (sente/send-event! [:codenames.comms/group-facts {:gid    gid
                                                                                             :datoms facts}])
-              :else (sente/send-event! [:codenames.comms/facts
-                                        {:gid gid :datoms facts}]))))))
+              :else                       (do (js/console.log "sending!") 
+                                              (sente/send-event! [:codenames.comms/facts
+                                                                  {:gid gid :datoms facts :tx-meta tx-meta}])))))))
 
 (defonce init-db
   (do (swig/init db/login-layout)

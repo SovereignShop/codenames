@@ -1,5 +1,6 @@
 (ns codenames.facts
   (:require
+   [codenames.constants.ui-tabs :as tabs]
    [swig.core :as swig]
    [datahike.api :as d]
    [datahike.datom :as datom]
@@ -21,7 +22,8 @@
         cat
         [(mapv #(select-keys % [:db/ident :db/valueType :db/cardinality :db/unique])
                (into swig/full-schema (remove :prop/group datascript-db/schema)))
-         (hiccup->facts datascript-db/pregame-layout)]))
+         (hiccup->facts datascript-db/pregame-layout)
+         [[:db.fn/retractAttribute [:swig/ident tabs/game] :swig.ref/parent]]]))
 
 (def initial-group-facts
   (into []
