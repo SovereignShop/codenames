@@ -1,0 +1,6 @@
+# Ignore
+*
+
+# Except
+!target
+!resources/public

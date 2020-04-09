@@ -1,0 +1,9 @@
+out/
+dist
+deps/bin
+resources/db
+resources/public/js
+resources/public/cljs-out
+src/assist_analysis/vega
+node_modules
+target
