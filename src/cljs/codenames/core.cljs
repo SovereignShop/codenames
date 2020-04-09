@@ -44,6 +44,7 @@
     (let [log-data (into {} (map (juxt :a :v)) tx-data)
           user-id  (:chat/user log-data)
           user     (d/entity db-after user-id)]
+      (codenames.events.chat/update-scroller!)
       (chat/add-log! (:chat/user log-data) (:user/name user) (:chat/message log-data))))
   (when-not (:db.transaction/no-save tx-meta)
     (let [facts (into [] (filter (comp db/schema-keys :a)) tx-data)

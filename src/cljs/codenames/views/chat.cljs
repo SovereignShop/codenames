@@ -486,9 +486,9 @@
   (delay
     (when-not (exists? js/React)
       (js/console.error "Klang: Can't find React. Load by yourself beforehand."))
-    (install-toggle-shortcut! "m")
-    (install-hide-shortcut! "ESC")
-    (set-max-logs! 300)
+    #_(install-toggle-shortcut! "m")
+    #_(install-hide-shortcut! "ESC")
+    (set-max-logs! 500)
     (add-watch db :rerender request-rerender!)
     (gstyle/installStyles (css-molokai))))
 
@@ -533,17 +533,14 @@
         model (r/atom "")
         rows (r/atom 1)]
     [(fn []
+
+       (request-rerender!)
        [v-box
         :style {:flex "1 1 0%"}
         :children
         [[scroller
           :style {:flex "1 1 0%"}
-          :attr {:id "chat-scroller"
-                 :on- #(let [elem (.getElementById js/document "chat-scroller")]
-                               (js/console.log "height:"
-                                               (.-scrollHeight elem)
-                                               (.-scrollTop elem))
-                               (set! (.-scrollTop elem) (.-scrollHeight elem)))}
+          :attr {:id "chat-scroller"}
           :child
           [:div {:id "__klang__id__"
                  :style {:flex "1 1 0%"
@@ -561,7 +558,8 @@
                                    (when (= (.-which event) goog.events.KeyCodes/ENTER)
                                          (do (reset! rows 1)
                                              (.preventDefault event)
-                                             (re-posh/dispatch [::chat-events/new-message (-> event .-target .-value)])
+                                             (re-posh/dispatch [::chat-events/new-message
+                                                                (-> event .-target .-value)])
                                              (reset! model "")))))
                   }
            :change-on-blur? false

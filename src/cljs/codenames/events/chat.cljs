@@ -8,19 +8,21 @@
    [datascript.transit :as dt]
    [datascript.core :as d]))
 
+(defn update-scroller! []
+  (let [scroller        (.getElementById js/document "chat-scroller")
+        chatbox         (.getElementById js/document "chat-box-textarea")
+        chatbox-height  (.-offsetHeight chatbox)
+        scroll-distance (- (.-scrollHeight scroller)
+                           (.-scrollTop scroller)
+                           (.-offsetHeight scroller)
+                           chatbox-height)]
+    (when (< scroll-distance 40)
+      (go (<! (timeout 25))
+          (set! (.-scrollTop scroller) (.-scrollHeight scroller))))))
+
 (def-event-ds ::new-message
   [db [_ msg]]
   (let [user (-> db (d/entity [:swig/ident idents/session]) :session/user :db/id)]
-    (go (let [scroller        (.getElementById js/document "chat-scroller")
-              chatbox         (.getElementById js/document "chat-box-textarea")
-              chatbox-height  (.-offsetHeight chatbox)
-              scroll-distance (- (.-scrollHeight scroller)
-                                 (.-scrollTop scroller)
-                                 (.-offsetHeight scroller)
-                                 chatbox-height)]
-          (when (< scroll-distance 40)
-            (<! (timeout 25))
-            (set! (.-scrollTop scroller) (.-scrollHeight scroller)))))
     (with-meta
       [{:chat/message msg :chat/time (tc/to-date (time/now)) :chat/user user}]
       {:db.transaction/log-message? true})))
