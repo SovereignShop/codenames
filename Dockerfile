@@ -3,5 +3,5 @@ ADD target/lib/lib app/lib
 ADD target/codenames-0.0.1-SNAPSHOT.jar app/
 RUN mkdir /var/lib/codenames
 WORKDIR /app
-CMD java $JAVA_OPTS -cp "codenames-0.0.1-SNAPSHOT.jar:lib/*" codenames.core
+CMD java $JAVA_OPTS -cp "codenames-0.0.1-SNAPSHOT.jar:lib/*" codenames.core --port 3001
 EXPOSE 3000

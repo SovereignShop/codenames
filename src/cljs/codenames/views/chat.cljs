@@ -1,6 +1,5 @@
 (ns codenames.views.chat
-  (:import
-   goog.ui.KeyboardShortcutHandler)
+  "Adapted from: https://github.com/rauhs/klang/blob/master/src/cljs/klang/core.cljs"
   (:require
    [swig.views :as swig-view]
    [cljs.core.async :refer [go timeout]]
@@ -21,14 +20,6 @@
    [goog.events.KeyCodes]
    [re-com.core :refer [box scroller h-box v-box input-text input-textarea throbber gap]]))
 
-(defn hl-clj-str
-  "Returns a string containing HTML that highlights the message. Takes a string
-  of clojure syntax. Such as map, set etc.
-  Ex:
-  (hl-clj-str \"{:foo :bar}\")"
-  [msg]
-  (.-value (.highlight js/hljs "clojure" msg true)))
-
 (defn msg->str
   "Converts a message to a string."
   [msg]
@@ -43,24 +34,6 @@
   [msg]
   (h "span" #js{"dangerouslySetInnerHTML" #js{"__html" (md/md->html (first msg))}}))
 
-(defn severity->color
-  "Returns a color for the given severity
-   http://www.w3schools.com/cssref/css_colornames.asp"
-  [severity]
-  (println "severity:" severity)
-  "steelblue"
-  #_(case (name (or severity ""))
-    "DEBG" "gray"
-    "TRAC" "darkgray"
-    "INFO" "steelblue"
-    "info" "steelblue"
-    "ERRO" "darkred"
-    "error" "darkred"
-    "CRIT" "red"
-    "FATA" "firebrick"
-    "WARN" "orange"
-    nil))
-
 (defn server-log-tab []
   (let [msg @(re-posh/subscribe [::chat-subs/get-current-msg [:swig/ident idents/chat]])
         level (or (:level msg) "")
@@ -72,7 +45,7 @@
       [throbber
        :size :smaller
        :color "red"]
-      [:span {:style {:color (severity->color level)}} (.toUpperCase (name level))]
+      [:span {:style {:color "steelblue"}} (.toUpperCase (name level))]
       [:span {:style {:flex "1 1 0%"
                       :height "18px"
                       :max-width "1200px"
@@ -110,20 +83,20 @@
   "The render function will always be called with 1 arg, the rum state.
    It should return [dom rum-state]."
   [render lcm]
-  (let [constr (fn [props]
-                 (this-as this
-                   ;; Call parent constructor:
-                   (.call js/React.Component this props)
-                   (set! (.-props this) props)
-                   (set! (.-state this) #js{:comp this})
-                   this))
+  (let [constr        (fn [props]
+                        (this-as this
+                          ;; Call parent constructor:
+                          (.call js/React.Component this props)
+                          (set! (.-props this) props)
+                          (set! (.-state this) #js{:comp this})
+                          this))
         should-update (aget lcm "should-update") ;; old-state state -> boolean
-        will-unmount (aget lcm "will-unmount") ;; state -> state
-        will-mount (aget lcm "will-mount") ;; state -> state
-        will-update (aget lcm "will-update") ;; state -> state
-        did-update (aget lcm "did-update") ;; state -> state
-        did-mount (aget lcm "did-mount") ;; state -> state
-        class-props (aget lcm "class-properties")] ;; custom properties+methods
+        will-unmount  (aget lcm "will-unmount")  ;; state -> state
+        will-mount    (aget lcm "will-mount")    ;; state -> state
+        will-update   (aget lcm "will-update")   ;; state -> state
+        did-update    (aget lcm "did-update")    ;; state -> state
+        did-mount     (aget lcm "did-mount")     ;; state -> state
+        class-props   (aget lcm "class-properties")] ;; custom properties+methods
     (goog/inherits constr js/React.Component)
     ;; Displayname gets set on the constructor itself:
     (gobj/set constr "displayName" (aget lcm "name"))
@@ -173,83 +146,10 @@
   (set! id-counter (inc id-counter))
   id-counter)
 
-(defn toggle-freeze
-  "Freezes the UI. Toggle on no param"
-  []
-  (!! update :frozen-at (fn [idx]
-                          (if (some? idx)
-                            nil
-                            id-counter))))
-
-(defn toggle-showing!
-  "Makes the overlay show/hide. Toggle on no param"
-  ([]
-   (!! update :showing? not))
-  ([tf]
-   (!! assoc :showing? tf)))
-
-(defn parent?
-  "Return true if the namespace p is a parent of c. Expects two string"
-  [p c]
-  (let [pd (str p ".")]
-    (= (subs c 0 (count pd)) pd)))
-
-(defn self-or-parent?
-  "Return true if the namespace p==c or p is a parent of c. Expects two string"
-  [p c]
-  (or (= c p)
-      (parent? p c)))
-
 (defn format-time
   [d]
   (when (instance? js/Date d)
     (.slice (aget (.split (.toJSON d) "T") 1) 0 -1)))
-
-(defn dump-to-console!
-  "Takes a log event and dumps all kinds of info about it to the developer
-  console. Works under chrome. Probably also under firefox."
-  [lg-ev]
-  (js/console.group
-    (gstring/format ;; firefox can't deal with format style stuff
-      "%s%s%s%s -- %s"
-      (:ns lg-ev)
-      (if (empty? (:ns lg-ev)) "" "/")
-      (:type lg-ev)
-      (if-some [lnum (:line (:meta lg-ev))] (str ":" lnum) "")
-      ;; We can't dered DB here to get the formatter
-      ;; or reagent will re-render everything always
-      (format-time (:time lg-ev))))
-  ;; The meta data contains things like filename and line number of the original
-  ;; log call. It might also catch the local bindings so we print them here.
-  (when-some [meta (:meta lg-ev)]
-    (.group js/console "Meta Data")
-    (some->> (:file meta) (.log js/console "Filename: %s"))
-    (when-some [trace (:trace meta)]
-      (js/console.log "TRACE:")
-      ;; We CANNOT add other text to the following log call since otherwise
-      ;; the trace will not be source mapped properly and we'll end up with JS source links.
-      (js/console.log trace))
-    (when-some [env (seq (:env meta))]
-      ;; 3rd level nested group. Oh yeah
-      (js/console.group "Local Bindings")
-      (doseq [[k v] env]
-        (.log js/console "%s : %o" (pr-str k) v))
-      (js/console.groupEnd))
-    ;; The rest of the meta info, not sure if this should ever happen:
-    (when-some [meta' (seq (dissoc meta :file :line :env :trace))]
-      (doseq [[k v] meta']
-        (js/console.log "%s : %o" (pr-str k) v)))
-    (js/console.groupEnd))
-  ;; console.dir firefox & chrome only?
-  ;; %o calls either .dir() or .dirxml() if it's a DOM node
-  ;; This means we get a real string and a real DOM node into
-  ;; our console. Probably better than always calling dir
-  (doseq [v (:msg lg-ev)]
-    ;; truncate adds the elippsis...
-    (if (string? v)
-      (js/console.log "%o" v)
-      (js/console.log "%o --- %s" v (-> v pr-str (gstring/truncate 20)))))
-  (js/console.groupEnd))
 
 (def render-log-event
   "Renders a single log message."
@@ -264,10 +164,9 @@
            " "
            ns
            (when-not (empty? ns) "/")
-           (h "span" #js{:style #js{:color (severity->color type)}} type)
+           (h "span" #js{:style #js{:color "steelblue"}} type)
            " "
-           (h "span" #js{:style #js{:cursor "pointer"}
-                         :onClick #(dump-to-console! lg-ev)}
+           (h "span" #js{:style #js{:cursor "pointer"}}
               (render-msg msg)))))))
 
 (defn search-filter-fn
@@ -352,13 +251,7 @@
                              :width          "calc(100% - 12px)"
                              :justifyContent "center"
                              :display        "flex"}}
-        (if (:showing? @db)
-          (@render-search-box (:search @db ""))
-          (h "span" #js{}))
-        (h "button" #js{:style   #js{:cursor "pointer"
-                                     :color  (if (:frozen-at @db) "orange" "green")}
-                        :onClick #(toggle-freeze)}
-           (if (:frozen-at @db) "Thaw" "Freeze")))
+        (@render-search-box (:search @db "")))
      (h "div" #js{:style #js{:width      "calc(100% - 12px)"
                              :height     "calc(100% - 40px)"
                              :color      "#fff"
@@ -425,38 +318,6 @@
 }")
 
 
-(defn install-toggle-shortcut!
-  "Installs a Keyboard Shortcut handler that toggles the visibility of the log overlay.
-   Call the return function to unregister."
-  [shortcut]
-  ;; If previous one exist just unregister it:
-  (when-some [prev (:shortcut-toggle-keys @db)]
-    (prev))
-  (let [handler (KeyboardShortcutHandler. js/window)]
-    (.registerShortcut handler "klang.toggle" shortcut)
-    (gevents/listen
-      handler
-      KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED
-      (fn [e] (toggle-showing!)))
-    (js/console.info "Klang: Toggle overlay keyboard shortcut installed:" shortcut)
-    (!! assoc :shortcut-toggle-keys #(.unregisterShortcut handler shortcut))))
-
-(defn install-hide-shortcut!
-  "Installs a Keyboard Shortcut handler that hides the log overlay.
-    Call the return function to unregister."
-  [shortcut]
-  ;; If previous one exist just unregister it:
-  (when-some [prev (:shortcut-hide-keys @db)]
-    (prev))
-  (let [handler (KeyboardShortcutHandler. js/window)]
-    (.registerShortcut handler "klang.hide" shortcut)
-    (gevents/listen
-      handler
-      KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED
-      (fn [e] (toggle-showing! false)))
-    (js/console.info "Klang: Hide overlay keyboard shortcut installed:" shortcut)
-    (!! assoc :shortcut-hide-keys #(.unregisterShortcut handler shortcut))))
-
 (defn set-max-logs!
   "Only keep the last n logs. If nil: No truncating."
   [n]
@@ -486,40 +347,26 @@
   (delay
     (when-not (exists? js/React)
       (js/console.error "Klang: Can't find React. Load by yourself beforehand."))
-    #_(install-toggle-shortcut! "m")
-    #_(install-hide-shortcut! "ESC")
     (set-max-logs! 500)
     (add-watch db :rerender request-rerender!)
     (gstyle/installStyles (css-molokai))))
 
 (defn add-log!
-  "This is the main log functions:
-  - ns - string
-  - severity - string, like \"INFO\" or \"WARN\"
-
-  - msg0 - If the map {::meta-data {...}} attaches this to the msg
-    Otherwise the first message"
-  [ns severity msg0 & msg]
+  [ns username msg0 & msg]
   (deref ensure-klang-init)
-  (let [db @db
+  (let [db   @db
         meta (::meta-data msg0)
-        msg (if (some? meta) (vec msg) (into [msg0] msg))]
+        msg  (if (some? meta) (vec msg) (into [msg0] msg))]
     (.push (:logs db) {:time (js/Date.)
-                       :id (gens)
-                       :ns (str ns)
-                       :type (name severity)
+                       :id   (gens)
+                       :ns   (str ns)
+                       :type (name username)
                        :meta meta ;; Potentially nil
-                       :msg msg})
+                       :msg  msg})
     (request-rerender!)
     (if (pos? (count msg))
       (last msg)
       msg0)))
-
-(comment
-
-  (add-log! "John" "INFO" "hello world" "This is Kinda cool" {:some :data})
-
-  )
 
 (defn clear!
   "Clears all logs"
@@ -533,7 +380,6 @@
         model (r/atom "")
         rows (r/atom 1)]
     [(fn []
-
        (request-rerender!)
        [v-box
         :style {:flex "1 1 0%"}

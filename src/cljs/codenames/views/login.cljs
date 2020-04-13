@@ -35,28 +35,11 @@
                                     :placeholder "Enter group name"
                                     :class       "form-control"
                                     :attr        {:id "pf-groupname"}]]]
-                       [v-box
-                        :class    "form-group"
-                        :children [[:label {:for "pf-password"} "Password"]
-                                   [input-text
-                                    :model       (:password @form-data)
-                                    :on-change   #(swap! form-data assoc :password %)
-                                    :placeholder "Enter password"
-                                    :class       "form-control"
-                                    :attr        {:id "pf-password" :type "password"}]]]
-                       [checkbox
-                        :label     "Forget me"
-                        :model     (:remember-me @form-data)
-                        :on-change #(swap! form-data assoc :remember-me %)]
                        [line :color "#ddd" :style {:margin "10px 0 10px"}]
                        [h-box
                         :gap      "12px"
                         :children [[button
-                                    :label    "Join group"
-                                    :class    "btn-primary"
-                                    :on-click process-ok]
-                                   [button
-                                    :label    "Create group"
+                                    :label    "Join or Create Group"
                                     :class    "btn-primary"
                                     :on-click process-ok]]]
                        (when (not= @login-state :unauthenticated)

@@ -18,7 +18,8 @@
    [taoensso.timbre.appenders.carmine :as car-appender]
    [taoensso.timbre.appenders.core :refer [println-appender]]
    [taoensso.timbre :as timbre :refer [debug info warn]]
-   [org.httpkit.server :refer [run-server]])
+   [org.httpkit.server :refer [run-server]]
+   [clojure.tools.cli :refer [parse-opts]])
   (:gen-class))
 
 (defroutes routes
@@ -44,19 +45,34 @@
 (def application (wrap-cors (wrap-defaults sente-route-wrapper
                                            (-> site-defaults
                                                (update :security assoc :anti-forgery true)
-                                               (assoc-in [:params :keywordize] {:parse-namespaces? true}))) 
+                                               (assoc-in [:params :keywordize] {:parse-namespaces? true})))
                             :access-control-allow-origin [#".*"]
                             :access-control-allow-methods [:get :put :post :delete]))
 
 (defonce server (atom nil))
 
+(def cli-options
+  [["-p" "--port PORT" "Port number"
+    :default 3001
+    :parse-fn #(Integer/parseInt %)
+    :validate [#(< 0 % 0x10000) "Must be a number between 0 and 65536"]]
+   ["-n" "--nrepl-port" "Nrepl Port"
+    :default nil
+    :parse-fn #(when % (Integer/parseInt %))
+    :validate [#(or (nil? %) (< 0 % 0x10000)) "Must be a number between 0 and 65536"]]
+   ["-h" "--help"]])
+
 (defn -main [& args]
-  (let [port 3001
-        nrepl-port 7888]
-    (reset! server (run-server #'application {:port port}))
-    (start-server :port nrepl-port)
-    (info (format "started nrepl. Port=%s" nrepl-port))
-    (sente/init-sente!)))
+  (let [{:keys [options errors summary] :as args} (parse-opts args cli-options)]
+    (cond (not (empty? errors)) (throw (Exception. (pr-str errors)))
+          :else
+          (let [{:keys [nrepl-port port]} options]
+            (println options args port)
+            (reset! server (run-server #'application {:port port}))
+            (when nrepl-port
+              (start-server :port nrepl-port)
+              (info (format "started nrepl. Port=%s" nrepl-port)))
+            (sente/init-sente!)))))
 
 (defn stop-http-server []
   (when-not (nil? @server)
@@ -66,7 +82,7 @@
     (reset! server nil)))
 
 (comment
-  (-main)
+  (-main :nrepl-port 7888)
   (stop-http-server)
   (@server)
   )
