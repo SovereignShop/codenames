@@ -1,4 +1,6 @@
 (ns codenames.facts
+  "Small utilities on top of datahike to handle mapping to/from datascript
+   facts."
   (:require
    [codenames.constants.ui-tabs :as tabs]
    [swig.core :as swig]
@@ -6,13 +8,10 @@
    [datahike.datom :as datom]
    [codenames.db :as datascript-db]
    [swig.parser :refer [hiccup->facts]]
-   [byte-streams :as bs]
    [clojure.java.io :as io]
    [datascript.core :as ds]
    [datascript.transit :as dt]
-   [taoensso.timbre :as timbre :refer [debug info warn error]])
-  (:import
-   [org.apache.commons.io FilenameUtils]))
+   [taoensso.timbre :as timbre :refer [error]]))
 
 (def db-directory "/var/lib/codenames/fact-db")
 (def default-uri (format "datahike:file://%s" db-directory))

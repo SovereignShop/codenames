@@ -4,9 +4,7 @@
    [codenames.constants.ui-tabs :as tabs]
    [codenames.constants.ui-idents :as idents]
    [codenames.utils :as utils]
-   [codenames.subs.session :as session]
    [datascript.core :as d]
-   [swig.parser :refer [hiccup->facts]]
    [swig.macros :refer [def-event-ds]]
    [swig.events :refer [exit-fullscreen]]
    [taoensso.timbre :refer-macros [debug info warn error]]))
@@ -31,13 +29,6 @@
           [[:db.fn/retractAttribute (:db/id game-tab) :swig.ref/parent]
            [:db/add parent-id :swig.view/active-tab [:swig/ident tabs/pregame]]
            [:db/add [:swig/ident tabs/pregame] :swig.ref/parent parent-id]])))
-
-
-(comment
-  (:swig.tab/fullscreen (d/entity @db/conn [:swig/ident tabs/game-board]))
-
-  )
-
 
 (def-event-ds ::new-game [db _]
   (let [session     (d/entity db [:swig/ident idents/session])
@@ -153,6 +144,6 @@
        [:db.fn/retractAttribute tid :codenames.team/players])
      [[:db/add (first teams) :codenames.team/players a]]
      [[:db/add (first teams) :codenames.team/players b]])))
-,
+
 (def-event-ds ::set-timer-length [db _]
   [])

@@ -5,7 +5,6 @@
    [swig.macros :refer [def-event-ds]]
    [cljs-time.core :as time]
    [cljs-time.coerce :as tc]
-   [datascript.transit :as dt]
    [datascript.core :as d]))
 
 (defn update-scroller! []

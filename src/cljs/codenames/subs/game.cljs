@@ -1,7 +1,5 @@
 (ns codenames.subs.game
   (:require
-   [datascript.core :as d]
-   [codenames.db :as db]
    [swig.macros :refer [def-sub def-pull-sub]]))
 
 (def-sub ::cards

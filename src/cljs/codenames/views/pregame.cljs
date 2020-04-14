@@ -1,11 +1,8 @@
 (ns ^:figwheel-always codenames.views.pregame
   (:require
    [codenames.constants.ui-tabs :as tabs]
-   [codenames.constants.ui-splits :as splits]
    [codenames.subs.pregame :as pregame-subs]
    [codenames.subs.users :as user-subs]
-   [codenames.subs.players :as player-subs]
-   [codenames.subs.app-state :as app-subs]
    [codenames.subs.session :as session-subs]
    [codenames.events.pregame :as pregame-events]
    [cljs-time.core :as time]
@@ -22,8 +19,7 @@
                       [::user-subs/get-user
                        (:db/id (:codenames.player/user player))])
         username    (:user/name player-user)
-        last-seen   (:user/last-seen player-user)
-        now         @(re-posh/subscribe [:codenames.subs.clock/latest-time])]
+        last-seen   (:user/last-seen player-user)]
     [h-box
      :gap "20px"
      :children
@@ -62,7 +58,7 @@
        (map show-player players)]]]))
 
 (defmethod swig-view/dispatch tabs/player-board
-  [tab]
+  [_]
   (when-let [game-id @(re-posh/subscribe [::session-subs/game])]
     [v-box
      :children
@@ -71,8 +67,7 @@
 
 (defmethod swig-view/dispatch tabs/pregame
   [{tab-id :db/id}]
-  (let [games @(re-posh/subscribe [::pregame-subs/open-games])
-        my-game @(re-posh/subscribe [::session-subs/game])]
+  (let [games @(re-posh/subscribe [::pregame-subs/open-games])]
     [scroller
      :style {:flex "1 1 0%"}
      :child

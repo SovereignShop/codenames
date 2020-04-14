@@ -3,14 +3,14 @@
             [swig.views :as swig-view]
             [codenames.subs.app-state :as app-state]
             [codenames.constants.ui-idents :as idents]
-            [re-com.core :refer [h-box v-box box gap line border title label modal-panel
-                                 alert-box throbber progress-bar input-text checkbox button p]]
-            [re-com.modal-panel :refer [modal-panel-args-desc]]
+            [re-com.core :refer [h-box v-box line border title modal-panel
+                                 alert-box throbber input-text button p]]
             [re-posh.core :as re-posh]
+            [reagent.ratom :refer [reaction]]
             [reagent.core :as reagent]))
 
 (defn dialog-markup
-  [login-state form-data process-ok process-cancel]
+  [login-state form-data process-ok]
   [border
    :border "1px solid #eee"
    :child  [v-box
@@ -56,17 +56,13 @@
   "Create a button to test the modal component for modal dialogs"
   []
   (let [login-state    (re-posh/subscribe [::app-state/authenticated?])
-        show?          (reagent.ratom/reaction (not= @login-state :authenticated))
+        show?          (reaction (not= @login-state :authenticated))
         form-data      (reagent/atom {:username    ""
                                       :groupname   ""
                                       :password    "abc123"
                                       :remember-me true})
-        save-form-data (reagent/atom nil)
-        process-ok     (fn [event]
+        process-ok     (fn [_]
                          (q/do-login @form-data)
-                         false)
-        process-cancel (fn [& _]
-                         (re-posh/dispatch [:codenames.events.app-state/login-success])
                          false)]
     (fn []
       [v-box
@@ -78,8 +74,7 @@
                      :child            [dialog-markup
                                         login-state
                                         form-data
-                                        process-ok
-                                        process-cancel]])]])))
+                                        process-ok]])]])))
 
 (defmethod swig-view/dispatch idents/login-window [_]
   [:img {:src "assets/Inspiring_sunset.jpg"

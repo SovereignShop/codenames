@@ -1,6 +1,5 @@
 (ns codenames.handlers
   (:require
-   [codenames.db :as db]
    [codenames.utils :as utils]
    [codenames.queries :as queries]
    [codenames.comms :as sente]
@@ -11,14 +10,10 @@
    [datahike.core :as d]
    [taoensso.timbre :as timbre :refer [debug info warn error]]))
 
-(def default-headers
-  {"Content-type"                 "application/edn"
-   "Access-Control-Allow-Methods" "GET,POST, PATCH, PUT, DELETE, OPTIONS"
-   "Access-Control-Allow-Headers" "Content-Type,Access-Control-Allow-Headers,Authorization, X-Requested-With"
-   "Access-Control-Allow-Origin"  "*"})
-
-(defn init-app
-  ([]
+(defn home-page [_]
+  {:headers {"Content-Type" "text/html"}
+   :status 200
+   :body
    (h/html5 {}
             [:html {:lang "en"}
              [:meta {:charset "UTF-8"}]
@@ -37,20 +32,19 @@
                ]
               "\t\t"
               [:script {:type "text/javascript"
-                        :src  "js/main.js"}]]])))
-
-(defn common [title & body]
-  {:headers {"Content-type" "text/html"
-             "Access-Control-Allow-Origin" "*"}
-   :status 200
-   :body (init-app)})
+                        :src  "js/main.js"}]]])})
 
 (defn four-oh-four []
-  (common "Page Not Found"
-          [:div {:id "four-oh-four"}
-           "The page you requested could not be found"]))
+  {:headers {"Content-type" "text/html"}
+   :status 200
+   :body
+   (h/html5 {}
+            [:div {:id "four-oh-four"}
+             "The page you requested could not be found"])})
 
-(defn transact! [conn uid gid facts]
+(defn transact!
+  "TODO: Fix hack"
+  [conn uid gid facts]
   (let [{:keys [tx-data] :as tx} (d/transact! conn facts)]
     (sente/client-event
      {:uid uid
@@ -59,45 +53,32 @@
                :datoms (map (partial apply ds/datom) tx-data)}]})
     tx))
 
-(defn join-group
-  [{:keys [session params] :as req}]
-  (let [{:keys [groupname username password create?]
-         }                 params
-        user-conn          (facts/key->conn username facts/initial-user-facts)
-        group-conn         (facts/key->conn groupname facts/initial-group-facts)
-        user               (queries/get-user @group-conn username)
-        group              (queries/get-group @group-conn groupname)
-        group-id           (or (:db/id group) -2)
-        user-id            (or (:db/id user) -1)
-        {:keys [tempids
-                db-after]} (transact! group-conn
-                                      username
-                                      groupname
-                                      [(assoc (or user (utils/make-user username)) :db/id user-id)
-                                       (assoc (or group (utils/make-group groupname))
-                                              :db/id group-id
-                                              :group/users [user-id])])
-        _                  (d/transact! user-conn
-                                        [(utils/make-session
-                                          (or (:db/id user) (tempids user-id))
-                                          (or (:db/id group) (tempids group-id))
-                                          groupname)])
-        facts-str          (facts/write-facts-str
-                            (concat (d/datoms @user-conn :eavt)
-                                    (d/datoms @group-conn :eavt)))]
+(defn join-or-create-group
+  [{:keys [session params]}]
+  (let [{:keys [groupname username]
+         }                params
+        user-conn         (facts/key->conn username facts/initial-user-facts)
+        group-conn        (facts/key->conn groupname facts/initial-group-facts)
+        user              (queries/get-user @group-conn username)
+        group             (queries/get-group @group-conn groupname)
+        user-id           (or (:db/id user) -1)
+        group-id          (or (:db/id group) -2)
+        {:keys [tempids]} (transact! group-conn
+                                     username
+                                     groupname
+                                     [(assoc (or user (utils/make-user username)) :db/id user-id)
+                                      (assoc (or group (utils/make-group groupname))
+                                             :db/id group-id
+                                             :group/users [user-id])])
+        _                 (d/transact! user-conn
+                                       [(utils/make-session
+                                         (or (:db/id user) (tempids user-id))
+                                         (or (:db/id group) (tempids group-id))
+                                         groupname)])
+        facts-str         (facts/write-facts-str
+                           (concat (d/datoms @user-conn :eavt)
+                                   (d/datoms @group-conn :eavt)))]
     {:status  200
      :session (assoc session :uid username :gid groupname)
      :body    facts-str
-     :headers default-headers}))
-
-(comment
-  (require '[codenames.db :as db])
-  (d/transact (facts/key->conn "collins" facts/initial-user-facts) 
-              (map #(select-keys % [:db/ident :db/valueType :db/cardinality])
-                   db/schema))
-
-  (def user-tx (d/transact! (facts/key->conn "collins" facts/initial-user-facts)
-                            [(utils/make-user "collins")]))
-  (keys @user-tx)
-
-  )
+     :headers {"Content-type" "application/edn"}}))

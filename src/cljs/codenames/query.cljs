@@ -1,27 +1,15 @@
 (ns codenames.query
   (:require
-   [cljs-http.client :as http]
-   [codenames.db :as db]
-   [codenames.constants.ui-tabs :as tabs]
    [codenames.constants.ui-idents :as idents]
    [codenames.constants.ui-views :as views]
-   [codenames.events.facts :as fact-events]
-   [cljs.core.async :refer [chan go <! put!]]
+   [cljs.core.async :refer [chan put!]]
    [clojure.string :as s]
-   [cognitect.transit :as t]
    [datascript.transit :as dt]
-   [datascript.core :as d]
-   [goog.Uri.QueryData :as qd]
-   [goog.crypt.base64 :as b64]
    [goog.events :as ev]
    [goog.net.EventType]
-   [goog.net.XhrIo :as xhr]
    [goog.string :as gstr]
-   [goog.dom :as gdom]
-   [cljs.reader :as edn]
    [re-posh.core :as re-posh]
-   [taoensso.timbre :refer-macros [debug info warn error]]
-   [thi.ng.domus.io :as io]))
+   [taoensso.timbre :refer-macros [debug info warn error]]))
 
 (defn url-encode
   [string]

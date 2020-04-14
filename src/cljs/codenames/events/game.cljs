@@ -2,9 +2,6 @@
   "Events that occure during a game"
   (:require
    [codenames.constants.ui-idents :as idents]
-   [codenames.queries :as queries]
-   [codenames.utils :refer [make-game]]
-   [codenames.db :as db]
    [datascript.core :as d]
    [swig.macros :refer [def-event-ds]]
    [taoensso.timbre :as timbre :refer-macros [debug info warn]]))

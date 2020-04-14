@@ -1,17 +1,15 @@
 (ns  codenames.comms
   "Codenames "
   (:require-macros
-   [cljs.core.async.macros :as asyncm :refer (go go-loop)])
+   [cljs.core.async.macros :refer [go-loop]])
   (:require
    [codenames.constants.ui-idents :as idents]
    [codenames.events.server :as server-events]
    [codenames.comms-common :refer [TransitPacker]]
-   [re-frame.core :as re-frame]
    [re-posh.core :as re-posh]
-   [datascript.transit :as dt]
+   [taoensso.sente :as sente]
    [taoensso.timbre :as timbre :refer-macros (tracef debugf infof warnf errorf)]
-   [cljs.core.async :as async :refer (<! >! put! chan take!)]
-   [taoensso.sente  :as sente :refer (cb-success?)]
+   [cljs.core.async :as async :refer (<! chan)]
    [cljs.core.match :refer [match]]))
 
 (defonce ^:dynamic *chsk* nil)
@@ -62,20 +60,6 @@
   (if *chsk-send!*
     (*chsk-send!* event)
     (warnf "No send function")))
-
-(defn server-event-loop []
-  (let [receive-channel (async/chan 1000)
-        force-send-ch (async/chan 10)]
-    (go-loop []
-      (let [results-channel (chan 1000)
-            results (async/pipe receive-channel results-channel)
-            tx-data (do (<! (async/alts! (async/timeout 10000)
-                                         force-send-ch))
-                        (async/into [] results-channel))]
-        (async/close! results-channel)
-        (send-event! [::facts tx-data])
-        (recur)))
-    [receive-channel force-send-ch]))
 
 (timbre/merge-config!
  {:middleware []})

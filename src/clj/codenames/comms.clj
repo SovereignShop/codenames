@@ -6,18 +6,12 @@
    [codenames.comms-common :as comms-common]
    [codenames.queries :as queries]
    [clojure.core.async :refer [go-loop <! put!]]
-   [compojure.core :refer [defroutes]]
-   [compojure.core :refer [GET POST]]
-   [datahike.datom :as datom]
-   [datascript.transit :as dt]
    [datahike.core :as d]
    [taoensso.sente.server-adapters.http-kit :refer [get-sch-adapter]]
    [taoensso.sente :as sente]
-   [taoensso.timbre :as timbre :refer [debug info warn error]]
+   [taoensso.timbre :as timbre :refer [info warn]]
    [hitchhiker.tree.key-compare :refer [IKeyCompare]]
-   [hitchhiker.tree.node :as n])
-  (:import
-   [datascript.db Datom]))
+   [hitchhiker.tree.node :as n]))
 
 (extend-protocol IKeyCompare
   java.util.Date
@@ -50,14 +44,13 @@
   (warn "Unknown client event: " (first event)))
 
 (defn insert-facts! [username groupname datoms tx-meta group-update?]
-  (info tx-meta)
   (let [user-facts  (filter (comp db/user-attributes :a) datoms)
         group-facts (filter (comp db/group-attributes :a) datoms)
         user-conn   (facts/key->conn username facts/initial-user-facts)
         group-conn  (facts/key->conn groupname facts/initial-group-facts)]
     (when (seq user-facts)
       (facts/insert-facts! user-conn user-facts)
-      (if group-update?
+      (when group-update?
         (doseq [{other-username :user/name} (queries/groupname->users @group-conn groupname)]
           (facts/insert-facts! (facts/key->conn other-username facts/initial-user-facts) user-facts)
           (when (not= other-username username)

@@ -13,7 +13,7 @@
    (for [x xs]
      [com/box :child (str x)])])
 
-(defmethod swig-view/dispatch tabs/db [tab]
+(defmethod swig-view/dispatch tabs/db [_]
   (let [db @(re-posh/subscribe [::db-subs/full-db])
         [es as vs] (apply map vector (sort-by (juxt first second) db))]
     [com/h-box

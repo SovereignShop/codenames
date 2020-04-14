@@ -9,8 +9,6 @@
 
 (defn main-popover []
   (let [{:keys [:popover/showing?
-                :popover/title
-                :popover/label
                 :popover/content]}
         @(re-posh/subscribe [::pop-subs/get-popover [:swig/ident idents/main-popover]])]
     (when showing?

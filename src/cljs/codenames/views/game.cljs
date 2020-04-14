@@ -1,12 +1,10 @@
 (ns ^:figwheel-always codenames.views.game
   (:require
    [codenames.subs.game :as game-subs]
-   [codenames.subs.app-state :as app-state]
    [codenames.subs.session :as session-subs]
    [codenames.subs.stats :as stat-subs]
    [codenames.constants.ui-idents :as idents]
    [codenames.constants.ui-tabs :as tabs]
-   [codenames.constants.ui-splits :as splits]
    [codenames.events.game :as game-events]
    [codenames.events.pregame :as pregame-events]
    [codenames.db :as db]

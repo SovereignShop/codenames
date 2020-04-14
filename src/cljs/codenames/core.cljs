@@ -18,6 +18,7 @@
    [codenames.events.server]
    [codenames.events.popover]
    [codenames.events.clock]
+   [codenames.events.chat :as chat-events]
    [codenames.views.users]
    [codenames.views.login]
    [codenames.views.game]
@@ -34,17 +35,16 @@
    [datascript.core :as d]
    [swig.core :as swig]
    [swig.views :as swig-view]
-   [reagent.core :as reagent]
    [re-posh.core :as re-posh]))
 
 (defonce _ (re-posh/connect! db/conn))
 
-(defn tx-log-listener [{:keys [db-before db-after tx-data tx-meta]}]
+(defn tx-log-listener [{:keys [db-after tx-data tx-meta]}]
   (when (:db.transaction/log-message? tx-meta)
     (let [log-data (into {} (map (juxt :a :v)) tx-data)
           user-id  (:chat/user log-data)
           user     (d/entity db-after user-id)]
-      (codenames.events.chat/update-scroller!)
+      (chat-events/update-scroller!)
       (chat/add-log! (:chat/user log-data) (:user/name user) (:chat/message log-data))))
   (when-not (:db.transaction/no-save tx-meta)
     (let [facts (into [] (filter (comp db/schema-keys :a)) tx-data)
@@ -65,17 +65,12 @@
       (re-posh/dispatch-sync [::app-events/initialize-db])))
 
 (defmethod swig-view/dispatch :swig.type/cell
-  ([{:keys [:db/id
-            :swig.cell/element
+  ([{:keys [:swig.cell/element
             :swig.dispatch/handler]
      :as   props}]
    (if handler
      [(get-method swig-view/dispatch handler) props]
      element)))
-
-(defn mount-root [route-specs main-component]
-  (reagent/render main-component
-                  (.getElementById js/document "app")))
 
 (defn dev-setup []
   (when config/debug?

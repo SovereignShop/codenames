@@ -2,12 +2,10 @@
   (:require
    [codenames.comms :refer [init-sente!]]
    [codenames.db :as db]
-   [clojure.set :as s]
    [datascript.core :as d]
    [re-posh.core :as re-posh]
    [goog.dom :as gdom]
    [datascript.transit :as dt]
-   [datascript.core :as d]
    [taoensso.timbre :as timbre :refer-macros [debug info warn]]))
 
 (timbre/set-level! :trace)

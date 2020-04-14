@@ -1,4 +1,5 @@
 (ns codenames.subs.db
+  "Debug sub that dumps the full database"
   (:require
    [swig.macros :refer-macros [def-sub]]))
 

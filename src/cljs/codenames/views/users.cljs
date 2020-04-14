@@ -17,7 +17,6 @@
 
 (defn users-view []
   (let [group-id                 @(re-posh/subscribe [::session-subs/group])
-        user-id                  @(re-posh/subscribe [::session-subs/user])
         users                    @(re-posh/subscribe [::user-subs/users group-id])
         gids                     (take (count users) (repeat group-id))
         usernames                (map :user/name users)
@@ -32,4 +31,4 @@
        [column "User Name" usernames]
        [column "Last Seen" ping-times]]]]))
 
-(defmethod swig-view/dispatch tabs/users [tab] [users-view])
+(defmethod swig-view/dispatch tabs/users [_] [users-view])

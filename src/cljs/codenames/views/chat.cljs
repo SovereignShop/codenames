@@ -2,23 +2,18 @@
   "Adapted from: https://github.com/rauhs/klang/blob/master/src/cljs/klang/core.cljs"
   (:require
    [swig.views :as swig-view]
-   [cljs.core.async :refer [go timeout]]
-   [codenames.subs.chat :as chat-subs]
    [codenames.events.chat :as chat-events]
    [cljsjs.highlight]
    [cljsjs.highlight.langs.clojure]
    [codenames.constants.ui-idents :as idents]
-   [codenames.constants.ui-tabs :as tabs]
    [re-posh.core :as re-posh]
-   [goog.events :as gevents]
    [goog.object :as gobj]
-   [goog.string :as gstring]
    [goog.string.format]
    [goog.style :as gstyle]
    [markdown.core :as md]
    [reagent.core :as r]
    [goog.events.KeyCodes]
-   [re-com.core :refer [box scroller h-box v-box input-text input-textarea throbber gap]]))
+   [re-com.core :refer [scroller v-box input-textarea]]))
 
 (defn msg->str
   "Converts a message to a string."
@@ -33,24 +28,6 @@
 (defn render-msg
   [msg]
   (h "span" #js{"dangerouslySetInnerHTML" #js{"__html" (md/md->html (first msg))}}))
-
-(defn server-log-tab []
-  (let [msg @(re-posh/subscribe [::chat-subs/get-current-msg [:swig/ident idents/chat]])
-        level (or (:level msg) "")
-        vargs (:vargs msg)]
-    [h-box
-     :gap "10px"
-     :children
-     [[:div {:style {:width "18px"}}]
-      [throbber
-       :size :smaller
-       :color "red"]
-      [:span {:style {:color "steelblue"}} (.toUpperCase (name level))]
-      [:span {:style {:flex "1 1 0%"
-                      :height "18px"
-                      :max-width "1200px"
-                      :overflow "hidden"}} (render-msg (first vargs))]
-      [:div {:style {:width "40px"}}]]]))
 
 (defonce db (atom {:showing? true
                    :max-logs 500
@@ -375,9 +352,8 @@
   (request-rerender!))
 
 (defmethod swig-view/dispatch idents/chat
-  [tab]
-  (let [shift-pressed? (r/atom false)
-        model (r/atom "")
+  [_]
+  (let [model (r/atom "")
         rows (r/atom 1)]
     [(fn []
        (request-rerender!)
@@ -402,11 +378,10 @@
                                           (= (.-which event) goog.events.KeyCodes/ENTER))
                                    (swap! rows inc)
                                    (when (= (.-which event) goog.events.KeyCodes/ENTER)
-                                         (do (reset! rows 1)
-                                             (.preventDefault event)
-                                             (re-posh/dispatch [::chat-events/new-message
-                                                                (-> event .-target .-value)])
-                                             (reset! model "")))))
+                                     (reset! rows 1)
+                                     (.preventDefault event)
+                                     (re-posh/dispatch [::chat-events/new-message (-> event .-target .-value)])
+                                     (reset! model ""))))
                   }
            :change-on-blur? false
            :on-change #(reset! model %)]]]])]))

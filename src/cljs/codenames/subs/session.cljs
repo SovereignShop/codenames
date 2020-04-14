@@ -1,7 +1,5 @@
 (ns codenames.subs.session
   (:require
-   [datascript.core :as d]
-   [codenames.db :as db]
    [swig.macros :refer-macros [def-sub]]
    [taoensso.timbre :refer-macros [debug info warn]]))
 
