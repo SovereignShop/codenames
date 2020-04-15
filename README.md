@@ -12,7 +12,7 @@ make build
 
 ```
 cd target
-java -cp "codenames-0.0.1-SNAPSHOT.jar:lib/lib/*" codenames.core
+java -cp "target/codenames-0.0.1-SNAPSHOT.jar:target/lib/lib/*" codenames.core
 ```
 
 
