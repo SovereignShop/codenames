@@ -1,8 +1,6 @@
 (ns codenames.subs.pregame
   "Subs associdate with pre-game"
   (:require
-   [datascript.core :as d]
-   [codenames.db :as db]
    [swig.macros :refer [def-sub]]))
 
 (def-sub ::players

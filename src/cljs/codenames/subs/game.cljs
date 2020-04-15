@@ -20,18 +20,6 @@
    [?game-id :game/current-round ?round-id]
    [?card :codenames.piece/round ?round-id]])
 
-(def-sub ::cards-played
-  [:find [(count-distinct ?red) (count-distinct ?blue)]
-   :in $ ?game-id
-   :where
-   [?game-id :game/current-round ?round-id]
-   [?red  :codenames.character-card/role   :red]
-   [?red  :codenames.character-card/played? true]
-   [?red  :codenames.piece/round ?round-id]
-   [?blue :codenames.character-card/role   :blue]
-   [?blue :codenames.character-card/played? true]
-   [?blue :codenames.piece/round ?round-id]])
-
 (def-sub ::player-type
   [:find ?player-type .
    :in $ ?game-id
@@ -41,7 +29,6 @@
    [?tid :codenames.team/players ?pid]
    [?pid :codenames.player/user ?uid]
    [?pid :codenames.player/type ?player-type]])
-
 
 (def-sub ::red-cards-remaining
   [:find ?rem .
