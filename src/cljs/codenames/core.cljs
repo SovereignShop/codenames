@@ -45,7 +45,9 @@
           user-id  (:chat/user log-data)
           user     (d/entity db-after user-id)]
       (chat-events/update-scroller!)
-      (chat/add-log! (:chat/user log-data) (:user/name user) (:chat/message log-data))))
+      (chat/add-log! (:chat/user log-data)
+                     (:user/name user)
+                     (:chat/message log-data))))
   (when-not (:db.transaction/no-save tx-meta)
     (let [facts (into [] (filter (comp db/schema-keys :a)) tx-data)
           gid   (d/q '[:find ?groupname .
@@ -54,8 +56,9 @@
                        [?id :group/name ?groupname]]
                      db-after)]
       (when-not (empty? facts)
-        (cond (:tx/group-update? tx-meta) (sente/send-event! [:codenames.comms/group-facts {:gid    gid
-                                                                                            :datoms facts}])
+        (cond (:tx/group-update? tx-meta) (sente/send-event! [:codenames.comms/group-facts
+                                                              {:gid    gid
+                                                               :datoms facts}])
               :else                       (do (js/console.log "sending!") 
                                               (sente/send-event! [:codenames.comms/facts
                                                                   {:gid gid :datoms facts :tx-meta tx-meta}])))))))
@@ -87,3 +90,46 @@
 
 (defn ^:after-load re-render []
   (swig/render [:swig/ident :swig/root-view]))
+
+(comment
+
+  (def join-views
+    [[:db/add 58 :swig.ref/parent 61]
+     [:db/retractEntity 51]
+     [:db/retractEntity 50]
+     [:db/add 45 :swig.ref/parent 58]
+     [:db/add 52 :swig.ref/parent 58]])
+
+  (def split-tab
+    [{:db/id -2
+      :swig/index 1
+      :swig/type :swig.type/split
+      :swig.ref/parent 61
+      :swig.split/ops {:swig/type :swig.type/operations
+                       :db/id -4, :swig.ref/parent -2
+                       :swig.operations/ops []}}
+     [:db/id -1]
+     [:swig/index 0]
+     [:swig/type :swig.type/view]
+     [:swig.ref/parent -2]
+     [:swig.view/ops {:swig/type :swig.type/operations,
+                      :db/id -3, :swig.ref/parent -1,
+                      :swig.operations/ops []}]
+     [:swig.view/active-tab 45]
+     [:db/add 58 :swig.ref/parent -2]
+     [:db/add 58 :swig/index 1]
+     [:db/add 45 :swig.ref/parent -1]])
+
+  (d/q '[:find ?id
+         :in $
+         :where
+         [?id :swig/type]]
+       @db/conn)
+
+  (into {} (d/pull @db/conn '[*] 52))
+
+  (map #(into {} %)
+       (d/pull-many @db/conn '[*] [176 168 160]))
+
+
+  )

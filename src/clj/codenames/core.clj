@@ -2,18 +2,21 @@
   (:require
    [codenames.comms :as sente]
    [codenames.handlers :as handlers]
+   [codenames.facts :as facts]
    [compojure.core :refer [GET POST defroutes]]
    [compojure.route :as route]
+   [clojure.java.io :as io]
    [nrepl.server :refer [start-server]]
    [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
    [taoensso.timbre :as timbre :refer [info]]
    [org.httpkit.server :refer [run-server]]
    [clojure.tools.cli :refer [parse-opts]])
-  (:gen-class))
+  (:gen-class)
+  (:import [java.util Date]))
 
 (defroutes routes
-  (GET  "/" [& params] handlers/home-page)
-  (GET "/login" [& params] handlers/join-or-create-group)
+  (GET  "/" [& _] handlers/home-page)
+  (GET "/login" [& _] handlers/join-or-create-group)
   (GET  "/chsk"  ring-req (sente/*ring-ajax-get-or-ws-handshake* ring-req))
   (POST "/chsk"  ring-req (sente/*ring-ajax-post*                ring-req) 1 2)
   (route/resources "/")
@@ -25,6 +28,13 @@
                      (update :security assoc :anti-forgery true)
                      (assoc-in [:params :keywordize] {:parse-namespaces? true}))))
 
+(defn create-app [db-dir]
+  (fn [req]
+    (binding [facts/*db-directory* db-dir
+              facts/*default-uri* (format "datahike:file://%s" db-dir)]
+      (application req))))
+
+(create-app "/tmp")
 
 (defonce server (atom nil))
 
@@ -37,6 +47,9 @@
     :default nil
     :parse-fn #(when % (Integer/parseInt %))
     :validate [#(or (nil? %) (< 0 % 0x10000)) "Must be a number between 0 and 65536"]]
+   ["-d" "--db-dir" "Root Database Directory"
+    :default "/tmp"
+    :validate [#(.isDirectory (io/file %)) "Must be an existing directory"]]
    ["-h" "--help"]])
 
 (defn -main [& args]
@@ -44,12 +57,12 @@
     (cond (seq errors)    (pr-str errors)
           (:help options) (prn-str summary)
           :else
-          (let [{:keys [nrepl-port port]} options]
-            (reset! server (run-server #'application {:port port}))
+          (let [{:keys [nrepl-port port db-dir]} options]
+            (reset! server (run-server (create-app db-dir) {:port port}))
             (when nrepl-port
               (start-server :port nrepl-port)
               (info (format "started nrepl. Port=%s" nrepl-port)))
-            (sente/init-sente!)))))
+            (sente/init-sente! db-dir)))))
 
 (defn stop-http-server []
   (when-not (nil? @server)
@@ -61,7 +74,7 @@
 (comment
   (-main "--port" "3001")
 
-  (parse-opts ["--port" "3001" "--nrepl-port" "7888"] cli-options)
+  (parse-opts ["--port" "3001"] cli-options)
 
   @server
   (stop-http-server)

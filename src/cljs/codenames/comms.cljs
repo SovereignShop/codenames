@@ -1,4 +1,4 @@
-(ns  codenames.comms
+(ns codenames.comms
   "Codenames "
   (:require-macros
    [cljs.core.async.macros :refer [go-loop]])

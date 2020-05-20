@@ -101,63 +101,78 @@
     "worm" "wristwatch" "yardstick" "zamboni" "zen" "zero" "zipper" "zone" "zoo"})
 
 (def login-layout
-  (swig/view {:swig/ident :swig/root-view}
-             (swig/window {:swig/ident idents/login-window})
-             (swig/window {:swig/ident idents/modal-dialog})
-             (swig/window {:swig/ident       idents/main-popover
-                           :popover/showing? false})))
+  (view {:swig/ident :swig/root-view}
+        (window {:swig/ident idents/login-window})
+        (window {:swig/ident idents/modal-dialog})
+        (window {:swig/ident       idents/main-popover
+                 :popover/showing? false})))
 
 (def pregame-layout
-  (swig/view {:swig/ident           :swig/root-view
-              :swig.view/active-tab [:swig/ident tabs/pregame]}
-             (swig/view {:swig/ident           tabs/app-root
-                         :swig.view/active-tab [:swig/ident tabs/pregame]}
-                        (swig/tab {:swig/ident     tabs/users
-                                   :swig.tab/label {:swig/type         :swig.type/cell
-                                                    :swig.cell/element "Users"}})
-                        (swig/tab {:swig/ident idents/chat
-                                   :swig.tab/label {:swig/type :swig.type/cell
-                                                    :swig.cell/element "Chat"}
-                                   :swig.tab/ops   [{:swig/type           :swig.type/operation
-                                                     :swig.operation/name :operation/fullscreen}
-                                                    {:swig/type           :swig.type/operation
-                                                     :swig.operation/name :operation/divide-horizontal}]})
-                        (swig/tab {:swig/ident     tabs/leader-board
-                                   :swig.tab/label {:swig/type         :swig.type/cell
-                                                    :swig.cell/element "Leader Board"}
-                                   :swig.tab/ops   [{:swig/type           :swig.type/operation
-                                                     :swig.operation/name :operation/fullscreen}
-                                                    {:swig/type           :swig.type/operation
-                                                     :swig.operation/name :operation/divide-horizontal}]})
-                        (swig/tab {:swig/ident     tabs/game
-                                   :swig.tab/label {:swig/type         :swig.type/cell
-                                                    :swig.cell/element "Game"}
-                                   :swig.tab/ops   [{:swig/type           :swig.type/operation
-                                                     :swig.operation/name :operation/fullscreen}
-                                                    {:swig/type           :swig.type/operation
-                                                     :swig.operation/name :operation/divide-horizontal}]}
-                                  (swig/split {:swig/ident               splits/game-split
-                                               :swig.split/orientation   :vertical
-                                               :swig.split/split-percent 30
-                                               :swig.split/ops           [{:swig/type           :swig.type/operation
-                                                                           :swig.operation/name :operation/join}]}
-                                              (swig/view {:swig.view/active-tab [:swig/ident tabs/player-board]}
-                                                         (swig/tab {:swig/ident     tabs/player-board
-                                                                    :swig.tab/label {:swig/type         :swig.type/cell
-                                                                                     :swig.cell/element "Players"}
-                                                                    :swig.tab/ops [{:swig/type :swig.type/operation
-                                                                                    :swig.operation/name :operation/divide-vertical}]}))
-                                              (swig/view {:swig.view/active-tab [:swig/ident  tabs/game-board]}
-                                                         (swig/tab {:swig/ident     tabs/game-board
-                                                                    :swig.tab/label {:swig/type         :swig.type/cell
-                                                                                     :swig.cell/element "Board"}
-                                                                    :swig.tab/ops   [{:swig/type           :swig.type/operation
-                                                                                      :swig.operation/name :operation/fullscreen}
-                                                                                     {:swig/type :swig.type/operation
-                                                                                      :swig.operation/name :operation/divide-vertical}]}))))
-                        (swig/tab {:swig/ident     tabs/pregame
-                                   :swig.tab/label {:swig/type         :swig.type/cell
-                                                    :swig.cell/element "Pregame"}}))))
+  (view {:swig/ident           :swig/root-view
+         :swig/type            :swig/root
+         :swig.view/active-tab [:swig/ident tabs/pregame]}
+        (view {:swig/ident           tabs/app-root
+               :swig.view/active-tab [:swig/ident tabs/pregame]}
+              (split {:swig.split/orientation   :horizontal
+                      :swig.split/split-percent 30
+                      :swig.split/ops          {:swig/type :swig.type/operations
+                                                :swig.operations/ops
+                                                [{:swig/type :swig.operation/join}]}}
+                     (view {:swig.view/active-tab [:swig/ident idents/chat]}
+                           (tab {:swig/ident     idents/chat
+                                 :swig.tab/label {:swig/type         :swig.type/cell
+                                                  :swig.cell/element "Chat"}
+                                 :swig.tab/ops   {:swig/type :swig.type/operations
+                                                  :swig.operations/ops
+                                                  [{:swig/type :swig.operation/fullscreen}
+                                                   {:swig/type :swig.operation/join}
+                                                   {:swig/type :swig.operation/divide-horizontal}]}}))
+                     (view {:swig.view/active-tab [:swig/ident tabs/pregame]}
+                           (tab {:swig/ident     tabs/users
+                                 :swig.tab/label {:swig/type         :swig.type/cell
+                                                  :swig.cell/element "Users"}})
+                           (tab {:swig/ident     tabs/leader-board
+                                 :swig.tab/label {:swig/type         :swig.type/cell
+                                                  :swig.cell/element "Leader Board"}
+                                 :swig.tab/ops   {:swig/type :swig.type/operations
+                                                  :swig.operations/ops
+                                                  [{:swig/type :swig.operation/fullscreen}
+                                                   {:swig/type :swig.operation/join}
+                                                   {:swig/type :swig.operation/divide-horizontal}]}})
+                           (tab {:swig/ident     tabs/game
+                                 :swig.tab/label {:swig/type         :swig.type/cell
+                                                  :swig.cell/element "Game"}
+                                 :swig.tab/ops   {:swig/type :swig.type/operations
+                                                  :swig.operations/ops
+                                                  [{:swig/type :swig.operation/fullscreen}
+                                                   {:swig/type :swig.operation/divide-horizontal}]}}
+                                (split {:swig/ident               splits/game-split
+                                        :swig.split/orientation   :vertical
+                                        :swig.split/split-percent 30
+                                        :swig.split/ops          {:swig/type :swig.type/operations
+                                                                  :swig.operations/ops
+                                                                  [{:swig/type :swig.operation/join}]}}
+                                       (view {:swig.view/active-tab [:swig/ident tabs/player-board]}
+                                             (tab {:swig/ident     tabs/player-board
+                                                   :swig.tab/label {:swig/type         :swig.type/cell
+                                                                    :swig.cell/element "Players"}
+                                                   :swig.tab/ops   {:swig/type :swig.type/operations
+                                                                    :swig.operations/ops
+                                                                    [{:swig/type :swig.operation/divide-vertical}
+                                                                     {:swig/type :swig.operation/join}]}}))
+                                       (view {:swig.view/active-tab [:swig/ident  tabs/game-board]}
+                                             (tab {:swig/ident     tabs/game-board
+                                                   :swig.tab/label {:swig/type         :swig.type/cell
+                                                                    :swig.cell/element "Board"}
+                                                   :swig.tab/ops   {:swig/type :swig.type/operations
+                                                                    :swig.operations/ops
+                                                                    [{:swig/type :swig.operation/fullscreen}
+                                                                     {:swig/type :swig.operation/join}
+                                                                     {:swig/type :swig.operation/divide-vertical}]}}))))
+                           (tab {:swig/ident     tabs/pregame
+                                 :swig.tab/label {:swig/type         :swig.type/cell
+                                                  :swig.cell/element "Pregame"}}))))))
+
 
 (defonce default-db
   [{:swig/ident              idents/fullscreen-view
@@ -173,10 +188,10 @@
     :db/valueType   :db.type/ref
     :db/cardinality :db.cardinality/one
     :prop/group     false}
-   {:db/ident
-    :session/group      :db/valueType
-    :db.type/ref        :db/cardinality
-    :db.cardinality/one :prop/group false}
+   {:db/ident       :session/group
+    :db/valueType   :db.type/ref
+    :db/cardinality :db.cardinality/one
+    :prop/group     false}
    {:db/ident       :html.iframe/src
     :db/valueType   :db.type/string
     :db/cardinality :db.cardinality/one

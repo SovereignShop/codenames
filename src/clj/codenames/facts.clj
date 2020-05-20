@@ -13,8 +13,8 @@
    [datascript.transit :as dt]
    [taoensso.timbre :as timbre :refer [error]]))
 
-(def db-directory "/var/lib/codenames/fact-db")
-(def default-uri (format "datahike:file://%s" db-directory))
+(def ^{:dynamic true} *db-directory* nil)
+(def ^{:dynamic true} *default-uri* nil)
 
 (def initial-user-facts
   (into []
@@ -31,7 +31,7 @@
                (filter :prop/group datascript-db/schema))]))
 
 (defn create-db! [uri initial-tx]
-  (try (let [db-dir (io/file db-directory)]
+  (try (let [db-dir (io/file *db-directory*)]
          (when-not (.exists db-dir)
            (.mkdirs db-dir)))
        (d/create-database uri :initial-tx initial-tx)
@@ -45,8 +45,8 @@
   (memoize
    (fn
      ([k initial-tx]
-      (let [uri (str default-uri "/" k ".db")]
-        (try (let [db-dir (io/file db-directory)]
+      (let [uri (str *default-uri* "/" k ".db")]
+        (try (let [db-dir (io/file *db-directory*)]
                (when-not (.exists db-dir)
                  (.mkdir db-dir)))
              (d/connect uri)
@@ -71,8 +71,3 @@
 
 (defn write-facts-str [facts]
   (dt/write-transit-str (map-facts ds/datom dt/read-transit-str facts)))
-
-(comment
-  (def base-layout (hiccup->facts datascript-db/layout))
-  (d/delete-database default-uri)
-  (d/datoms @(key->conn "collins") :eavt 99 :swig.split/split-percent))

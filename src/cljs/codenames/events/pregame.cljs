@@ -24,7 +24,7 @@
         parent (:swig.ref/parent game-tab)
         parent-id (:db/id parent)]
     (into (if (:swig.tab/fullscreen tab)
-            (exit-fullscreen db [nil (:db/id tab)])
+            (exit-fullscreen db tab)
             [])
           [[:db.fn/retractAttribute (:db/id game-tab) :swig.ref/parent]
            [:db/add parent-id :swig.view/active-tab [:swig/ident tabs/pregame]]

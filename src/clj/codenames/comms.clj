@@ -85,15 +85,18 @@
   [{[_ {:keys [gid datoms tx-meta]}] :event uid :uid}]
   (insert-facts! uid gid datoms tx-meta true))
 
-(defn init-sente! []
+(defn init-sente! [db-dir]
   (info "starting client receive loop")
-  (go-loop []
-    (let [x (<! *ch-chsk*)
-          event (:event x)]
-      (if (= event ::stop)
-        (info "Exiting")
-        (do (client-event x)
-            (recur))))))
+  (binding [facts/*db-directory* db-dir
+            facts/*default-uri* (format "datahike:file://%s" db-dir)]
+    (go-loop []
+      (let [x (<! *ch-chsk*)
+            event (:event x)]
+        (if (= event ::stop)
+          (info "Exiting")
+          (do (client-event x)
+              (recur)))))))
+
 (comment 
   (put! *ch-chsk* {:event ::stop}))
 
