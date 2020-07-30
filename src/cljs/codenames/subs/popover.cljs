@@ -1,6 +1,6 @@
 (ns codenames.subs.popover
   (:require
-   [swig.macros :refer [def-pull-sub]]))
+   [swig.macros :refer-macros [def-pull-sub]]))
 
 (def-pull-sub ::get-popover
   [:popover/content

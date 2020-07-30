@@ -2,7 +2,7 @@
   (:require
    [cljs.core.async :refer [go timeout <!]]
    [codenames.constants.ui-idents :as idents]
-   [swig.macros :refer [def-event-ds]]
+   [swig.macros :refer-macros [def-event-ds]]
    [cljs-time.core :as time]
    [cljs-time.coerce :as tc]
    [datascript.core :as d]))

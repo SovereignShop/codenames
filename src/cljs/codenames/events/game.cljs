@@ -3,7 +3,7 @@
   (:require
    [codenames.constants.ui-idents :as idents]
    [datascript.core :as d]
-   [swig.macros :refer [def-event-ds]]
+   [swig.macros :refer-macros [def-event-ds]]
    [taoensso.timbre :as timbre :refer-macros [debug info warn]]))
 
 (defn users-turn? [db game-id]

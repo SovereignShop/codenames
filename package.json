@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "highlight.js": "9.15.10",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "react-highlight.js": "1.0.7"
+  }
+}

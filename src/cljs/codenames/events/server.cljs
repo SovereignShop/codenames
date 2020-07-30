@@ -1,6 +1,6 @@
 (ns codenames.events.server
   (:require
-   [swig.macros :refer [def-event-ds]]))
+   [swig.macros :refer-macros [def-event-ds]]))
 
 (def-event-ds ::set-server-status
   [db [_ id status]]

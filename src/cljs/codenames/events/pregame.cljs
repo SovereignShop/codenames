@@ -5,7 +5,7 @@
    [codenames.constants.ui-idents :as idents]
    [codenames.utils :as utils]
    [datascript.core :as d]
-   [swig.macros :refer [def-event-ds]]
+   [swig.macros :refer-macros [def-event-ds]]
    [swig.events :refer [exit-fullscreen]]
    [taoensso.timbre :refer-macros [debug info warn error]]))
 

@@ -32,7 +32,7 @@
                ]
               "\t\t"
               [:script {:type "text/javascript"
-                        :src  "js/main.js"}]]])})
+                        :src  "js/dev/main.js"}]]])})
 
 (defn four-oh-four []
   {:headers {"Content-type" "text/html"}

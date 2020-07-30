@@ -1,7 +1,7 @@
 (ns codenames.subs.pregame
   "Subs associdate with pre-game"
   (:require
-   [swig.macros :refer [def-sub]]))
+   [swig.macros :refer-macros [def-sub]]))
 
 (def-sub ::players
   [:find (pull ?pid [:codenames.player/type

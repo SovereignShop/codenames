@@ -1,6 +1,8 @@
 (ns codenames.views.chat
   "Adapted from: https://github.com/rauhs/klang/blob/master/src/cljs/klang/core.cljs"
   (:require
+   [react-dom :as react-dom]
+   [react :as react]
    [swig.views :as swig-view]
    [codenames.events.chat :as chat-events]
    [cljsjs.highlight]
@@ -9,7 +11,6 @@
    [re-posh.core :as re-posh]
    [goog.object :as gobj]
    [goog.string.format]
-   [goog.style :as gstyle]
    [markdown.core :as md]
    [reagent.core :as r]
    [goog.events.KeyCodes]
@@ -23,7 +24,7 @@
     (.substr s 1 (- (.-length s) 2))))
 
 (defn h [& args]
-  (.apply js/React.createElement js/React.createElement (into-array args)))
+  (.apply react/createElement react/createElement (into-array args)))
 
 (defn render-msg
   [msg]
@@ -63,7 +64,7 @@
   (let [constr        (fn [props]
                         (this-as this
                           ;; Call parent constructor:
-                          (.call js/React.Component this props)
+                          (.call react/Component this props)
                           (set! (.-props this) props)
                           (set! (.-state this) #js{:comp this})
                           this))
@@ -74,7 +75,7 @@
         did-update    (aget lcm "did-update")    ;; state -> state
         did-mount     (aget lcm "did-mount")     ;; state -> state
         class-props   (aget lcm "class-properties")] ;; custom properties+methods
-    (goog/inherits constr js/React.Component)
+    (goog/inherits constr react/Component)
     ;; Displayname gets set on the constructor itself:
     (gobj/set constr "displayName" (aget lcm "name"))
     (let [proto (.-prototype constr)]
@@ -103,17 +104,17 @@
                           #js{:props props
                               :key (apply key-fn props)}
                           #js{:props props})]
-        (js/React.createElement cls react-props)))))
+        (react/createElement cls react-props)))))
 
 (defn mount
   "Add component to the DOM tree. Idempotent. Subsequent mounts will just update component"
   [component node]
-  (js/ReactDOM.render component node))
+  (react-dom/render component node))
 
 (defn unmount
   "Removes component from the DOM tree"
   [node]
-  (js/ReactDOM.unmountComponentAtNode node))
+  (react-dom/unmountComponentAtNode node))
 
 (defonce id-counter 0)
 
@@ -273,7 +274,7 @@
 .hljs-emphasis,.hljs-strongemphasis,.hljs-class .hljs-title:last-child,.hljs-typename {
   font-style: italic;
 }
-.hljs-keyword,.hljs-function,.hljs-change,.hljs-winutils,.hljs-flow,.hljs-header,.hljs-attribute,
+.hljs-keyword,.hljs-function,.hl_js-change,.hljs-winutils,.hljs-flow,.hljs-header,.hljs-attribute,
 .hljs-symbol,.hljs-symbol .hljs-string,.hljs-tag .hljs-title,.hljs-value,.alias .hljs-keyword:first-child,
 .css .hljs-tag,.css .unit,.css .hljs-important {
   color: #f92672;
@@ -306,14 +307,17 @@
     (let [logs (:logs db)]
       (.splice logs 0 (- (alength logs) num)))))
 
-(def  rAF js/window.requestAnimationFrame)
 (def scheduled? false)
+
+(js/window.requestAnimationFrame
+ (fn []
+   (js/console.log "hello world")))
 
 (defn request-rerender!
   []
   (when-not scheduled?
     (set! scheduled? true)
-    (rAF
+    (js/window.requestAnimationFrame
      (fn []
        (possibly-truncate @db)
        (mount (render-overlay) (dom-el))
@@ -322,11 +326,13 @@
 (def ensure-klang-init
   "This will get DCE'd!"
   (delay
-    (when-not (exists? js/React)
-      (js/console.error "Klang: Can't find React. Load by yourself beforehand."))
+    #_(when-not (exists? js/React)
+        (js/console.error "Klang: Can't find React. Load by yourself beforehand."))
     (set-max-logs! 500)
     (add-watch db :rerender request-rerender!)
-    (gstyle/installStyles (css-molokai))))
+    (goog.style.installSafeStyleSheet
+     (goog.html.SafeStyleSheet.fromConstant
+      (goog.string.Const.from (css-molokai))))))
 
 (defn add-log!
   [ns username msg0 & msg]

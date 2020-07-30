@@ -37,6 +37,7 @@
    [swig.views :as swig-view]
    [re-posh.core :as re-posh]))
 
+
 (defonce _ (re-posh/connect! db/conn))
 
 (defn tx-log-listener [{:keys [db-after tx-data tx-meta]}]
@@ -90,6 +91,7 @@
 
 (defn ^:after-load re-render []
   (swig/render [:swig/ident :swig/root-view]))
+
 
 (comment
 

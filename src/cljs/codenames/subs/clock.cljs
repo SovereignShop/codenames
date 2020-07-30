@@ -1,7 +1,7 @@
 (ns codenames.subs.clock
   (:require
    [codenames.constants.ui-idents :as idents]
-   [swig.macros :refer [def-sub]]))
+   [swig.macros :refer-macros [def-sub]]))
 
 (def-sub ::latest-time
   [:find ?time .

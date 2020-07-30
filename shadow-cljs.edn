@@ -1,0 +1,9 @@
+{:deps     true
+ :dev-http {8706 "public"}
+ :builds
+ {:dev
+  {:target          :browser
+   :modules         {:main {:init-fn codenames.core/init}}
+   :source-map      true
+   :output-dir      "resources/public/js/dev"
+   :asset-path      "/js/dev"}}}

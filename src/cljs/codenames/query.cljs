@@ -9,7 +9,8 @@
    [goog.net.EventType]
    [goog.string :as gstr]
    [re-posh.core :as re-posh]
-   [taoensso.timbre :refer-macros [debug info warn error]]))
+   [taoensso.timbre :refer-macros [debug info warn error]])
+  (:import [goog.net XhrIo]))
 
 (defn url-encode
   [string]
@@ -34,7 +35,7 @@
 (defn request
   [{:keys [uri method data params success error headers edn? sign-key]
     :or {edn? true method :get}}]
-  (let [req     (goog.net.XhrIo.)
+  (let [req     (XhrIo.)
         method  (s/upper-case (name method))
         uri     (str uri (format-query-params params))]
     (info :request params)
@@ -55,27 +56,27 @@
    (let [q-str (prn-str query)
          result (chan)]
      (request
-      {:uri (gstr/format "%squery" js/window.location.href)
+      {:uri (gstr/format "%s/query" "localhost:3001")
        :method :get
        :edn? false
        :params {:query q-str :datoms? datoms?}  ;; TODO: GET request body?
        :success (fn [resp]
                   (info :success)
-                  (let [results-str (.getResponseText resp)]
+                  (let [results-str ^String (.getResponseText resp)]
                     (info ::do-query :string/count (count results-str))
                     (let [results (dt/read-transit-str results-str)]
                       (info "TESTING" (type results) (keys (first results)))
                       (put! result results)
                       (re-posh/dispatch [:codenames.events.queries/cache-query query]))))
        :error (fn [resp]
-                (let [err (.getResponseText resp)]
+                (let [err ^String (.getResponseText resp)]
                   (js/console.log err)
                   (put! result err)))})
      result)))
 
 (defn send-request
   ([{:keys [url endpoint]
-     :or {url js/window.location.href
+     :or {url "localhost:3001"
           endpoint "/query"}
      :as opts}]
    (let [result (chan)]
@@ -85,11 +86,11 @@
               :edn? false
               :success (fn [resp]
                          (info :success)
-                         (let [results-str (.getResponseText resp)]
+                         (let [results-str ^String (.getResponseText resp)]
                            (info ::do-query :string/count (count results-str))
                            (put! result results-str)))
               :error (fn [resp]
-                       (let [err (.getResponseText resp)]
+                       (let [err ^STlng (.getResponseText resp)]
                          (js/console.log err)
                          (put! result err)))}
              opts))
@@ -107,7 +108,7 @@
                (let [datoms (into [[:db/retractEntity [:swig/ident :swig/root-view]]
                                    [:db/retractEntity [:swig/ident idents/modal-dialog]]
                                    [:db/retractEntity [:swig/ident idents/modal-dialog]]]
-                                  (dt/read-transit-str (.getResponseText resp)))
+                                  (dt/read-transit-str ^String (.getResponseText resp)))
                      datoms (conj datoms
                                   {:swig/ident       idents/main-popover
                                    :swig/type        :swig.type/window

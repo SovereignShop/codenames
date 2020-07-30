@@ -1,6 +1,6 @@
 (ns codenames.subs.game
   (:require
-   [swig.macros :refer [def-sub def-pull-sub]]))
+   [swig.macros :refer-macros [def-sub def-pull-sub]]))
 
 (def-sub ::cards
   [:find (pull ?card [:codenames.character-card/color

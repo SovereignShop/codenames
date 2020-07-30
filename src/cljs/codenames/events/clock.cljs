@@ -1,7 +1,7 @@
 (ns codenames.events.clock
   (:require
    [codenames.constants.ui-idents :as idents]
-   [swig.macros :refer [def-event-ds]]))
+   [swig.macros :refer-macros [def-event-ds]]))
 
 (def-event-ds ::set-time
   [db [_ t]]
