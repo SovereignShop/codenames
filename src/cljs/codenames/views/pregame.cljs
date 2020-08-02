@@ -47,7 +47,7 @@
         (when-let [player (uid->player uid)]
           (if (= (:codenames.player/type player) :codemaster)
             [button
-             :label "Guesser"
+             :label "Guesser!!"
              :on-click #(re-posh/dispatch [::pregame-events/choose-player-type game-id :guesser])]
             [button
              :label (gstr/format "Code Master")

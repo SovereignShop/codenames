@@ -1,4 +1,4 @@
-(ns ^:figwheel-hooks codenames.core
+(ns codenames.core
   (:require
    [codenames.events.app-state :as app-events]
    [codenames.constants.ui-idents]
@@ -57,12 +57,14 @@
                        [?id :group/name ?groupname]]
                      db-after)]
       (when-not (empty? facts)
-        (cond (:tx/group-update? tx-meta) (sente/send-event! [:codenames.comms/group-facts
-                                                              {:gid    gid
-                                                               :datoms facts}])
-              :else                       (do (js/console.log "sending!") 
-                                              (sente/send-event! [:codenames.comms/facts
-                                                                  {:gid gid :datoms facts :tx-meta tx-meta}])))))))
+        (cond (:tx/group-update? tx-meta)
+              (sente/send-event! [:codenames.comms/group-facts
+                                  {:gid    gid
+                                   :datoms facts}])
+              :else
+              (do (js/console.log "sending!")
+                  (sente/send-event! [:codenames.comms/facts
+                                      {:gid gid :datoms facts :tx-meta tx-meta}])))))))
 
 (defonce init-db
   (do (swig/init db/login-layout)
@@ -94,6 +96,7 @@
 
 
 (comment
+
 
   (def join-views
     [[:db/add 58 :swig.ref/parent 61]
@@ -133,5 +136,10 @@
   (map #(into {} %)
        (d/pull-many @db/conn '[*] [176 168 160]))
 
+
+  (js/window.open "" "" "width=200,height=100")
+  (js/window.open "" "" "height=200,width=200")
+
+  (js/console.warn "Hello World")
 
   )

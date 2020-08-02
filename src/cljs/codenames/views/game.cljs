@@ -147,16 +147,16 @@
 
 (defmethod swig-view/dispatch tabs/leader-board
   [tab]
-  [:div "Leader Board"]
+  [:div "Leader Board!!!!!!!!"]
   #_(let [stats @(re-posh/subscribe [::stat-subs/leader-board])]
-    [:table
-     [:thead
-      [:tr [:td "Name"] [:td "CM Wins"] [:td "CM Losses"] [:td "Wins"] [:td "Losses"]]]
-     [:tbody
-      (for [stat stats]
-        [:tr
-         (for [s stat]
-           [:td (str s)])])]]))
+      [:table
+       [:thead
+        [:tr [:td "Name"] [:td "CM Wins"] [:td "CM Losses"] [:td "Wins"] [:td "Losses"]]]
+       [:tbody
+        (for [stat stats]
+          [:tr
+           (for [s stat]
+             [:td (str s)])])]]))
 
 (defmethod swig-view/dispatch tabs/score-board
   [tab]

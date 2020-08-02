@@ -100,18 +100,19 @@
   {:extra-deps {org.clojure/tools.deps.alpha {:mvn/version "0.8.709"}
                 day8.re-frame/re-frame-10x   {:local/root "../re-frame-10x"}
                 day8/re-frame-tracer         {:mvn/version "0.1.1-SNAPSHOT"}
-                cider/cider-nrepl            {:mvn/version "0.22.3"}
-                compliment                   {:mvn/version "0.3.6"}
-                nrepl                        {:mvn/version "0.6.0"}
+                cider/cider-nrepl            {:mvn/version "0.25.3"}
+                compliment                   {:mvn/version "0.3.10"}
+                nrepl                        {:mvn/version "0.8.0-alpha5"}
                 cider/piggieback             {:mvn/version "0.4.1"}
                 binaryage/devtools           {:mvn/version "0.9.11"}
                 thunknyc/profile             {:mvn/version "0.5.2"}
-                cljfmt                       {:mvn/version "0.5.7"
+                cljfmt                       {:mvn/version "0.6.8"
                                               :exclusions  [org.clojure/clojurescript]}
-                com.cemerick/pomegranate     {:mvn/version "1.1.0"}
+                refactor-nrepl               {:mvn/version "2.5.0"}
+                clj-commons/pomegranate      {:mvn/version "1.2.0"}
                 org.tcrawley/dynapath        {:mvn/version "0.2.5"}
-                mvxcvi/puget                 {:mvn/version "1.0.2"}
-                cider/orchard                {:mvn/version "0.3.1"}
+                mvxcvi/puget                 {:mvn/version "1.3.1"}
+                cider/orchard                {:mvn/version "0.6.0"}
                 cljs-tooling                 {:mvn/version "0.3.0"}}
    :main-opts  ["-m" "nrepl.cmdline" "--middleware"
                 "[cider.nrepl/cider-middleware,cider.piggieback/wrap-cljs-repl]" "--port" "4003"]
