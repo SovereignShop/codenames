@@ -7,3 +7,6 @@ resources/public/cljs-out
 src/assist_analysis/vega
 node_modules
 target
+.cpcache
+.nrepl-port
+pom.xml
