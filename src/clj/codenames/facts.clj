@@ -13,7 +13,7 @@
    [datascript.transit :as dt]
    [taoensso.timbre :as timbre :refer [error]]))
 
-(def db-directory "/var/lib/codenames/fact-db")
+(def db-directory "./fact-db")
 (def default-uri (format "datahike:file://%s" db-directory))
 
 (def initial-user-facts
