@@ -4,6 +4,8 @@ Simple Codenames App for Collins Family
 
 # Build
 
+Make sure you have the clojure CLI tool installed.
+
 ```bash
 make build
 ```
@@ -11,7 +13,6 @@ make build
 # Run
 
 ```
-cd target
 java -cp "target/codenames-0.0.1-SNAPSHOT.jar:target/lib/lib/*" codenames.core
 ```
 

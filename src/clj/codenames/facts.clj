@@ -11,10 +11,14 @@
    [clojure.java.io :as io]
    [datascript.core :as ds]
    [datascript.transit :as dt]
-   [taoensso.timbre :as timbre :refer [error]]))
+   [taoensso.timbre :as timbre :refer [error info]]))
 
 (def db-directory "./fact-db")
-(def default-uri (format "datahike:file://%s" db-directory))
+
+(defn current-working-directory []
+  (.getCanonicalPath (java.io.File. ".")))
+
+(def default-uri (format "datahike:file://%s/%s" (current-working-directory) "fact-db"))
 
 (def initial-user-facts
   (into []
@@ -51,7 +55,8 @@
                  (.mkdir db-dir)))
              (d/connect uri)
              (catch clojure.lang.ExceptionInfo ex
-               (case (:type (ex-data ex))
+               (create-db! uri initial-tx)
+               #_(case (:type (ex-data ex))
                  :db-does-not-exist (create-db! uri initial-tx)
                  (throw ex)))))))))
 
@@ -65,6 +70,7 @@
 
 (defn insert-facts! [conn facts]
   (try
+    (println "inserting facts!!")
     (d/transact conn (map-facts datom/datom dt/write-transit-str facts))
     (catch Exception e
       (error e))))

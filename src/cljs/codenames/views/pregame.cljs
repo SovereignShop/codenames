@@ -12,23 +12,21 @@
    [goog.string :as gstr]
    [taoensso.timbre :refer-macros [debug info warn error]]))
 
-
-(defn show-player [player]
+(defn show-player [uid player]
   (let [player-type (:codenames.player/type player)
+        player-uid (:db/id (:codenames.player/user player))
         player-user @(re-posh/subscribe
-                      [::user-subs/get-user
-                       (:db/id (:codenames.player/user player))])
+                      [::user-subs/get-user player-uid])
         username    (:user/name player-user)
         last-seen   (:user/last-seen player-user)]
     [h-box
      :gap "20px"
      :children
-     [[box :style {:color "black"} :child (str username)]
+     [[box :style {:color "black" :font-weight (when (= player-uid uid) "bold")} :child (str username)]
       [box :style {:color "black"} :child (str player-type)]
       [box :style {:color "black"} :child (str "Online "
                                                (time/in-minutes (time/interval (or last-seen (time/now)) (time/now)))
                                                " minutes ago")]]]))
-
 
 (defn show-players [color game-id]
   (let [players     @(re-posh/subscribe [::pregame-subs/players color game-id])
@@ -55,7 +53,7 @@
       [gap :size "10px"]
       [v-box
        :children
-       (map show-player players)]]]))
+       (map #(show-player uid %) players)]]]))
 
 (defmethod swig-view/dispatch tabs/player-board
   [_]

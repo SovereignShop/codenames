@@ -3,7 +3,7 @@
                       codenames.db/PORT     "3001"}
  ;;:pseudo-names       true
  ;;:pretty-print       true
- :optimizations      :advanced
+ :optimizations      :none              ; TODO: advanced broke recently
  :asset-path         "/js/dev"
  :output-to          "resources/public/js/main.js"
  :output-dir         "resources/public/js/dev"
