@@ -2,6 +2,8 @@
 
 Simple Codenames App for Collins Family
 
+See my [blog post](http://www.cartesiantheatrics.com/2020/04/14/codenames-app.html) for discussion of the motivation and ideas behind the project.
+
 # Build
 
 Make sure you have the clojure CLI tool installed.
