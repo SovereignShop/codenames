@@ -18,6 +18,7 @@ make build
 java -cp "target/codenames-0.0.1-SNAPSHOT.jar:target/lib/lib/*" codenames.core
 ```
 
+Hosted by default at localhost:3001.
 
 # Development
 
